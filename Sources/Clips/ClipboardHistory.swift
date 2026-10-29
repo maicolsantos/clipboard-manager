@@ -190,9 +190,13 @@ final class ClipboardHistory {
         guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
         items[idx].isMasked = true
         let trimmed = label?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let trimmed, !trimmed.isEmpty {
-            items[idx].customLabel = trimmed
-        }
+        items[idx].customLabel = (trimmed?.isEmpty ?? true) ? nil : trimmed
+        scheduleSave()
+    }
+
+    func removeLabel(from item: ClipItem) {
+        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
+        items[idx].customLabel = nil
         scheduleSave()
     }
 

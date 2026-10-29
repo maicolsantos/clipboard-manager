@@ -26,6 +26,8 @@ struct L10nTests {
             #expect(!L10n.tr(.labelPlaceholder, lang: lang).isEmpty)
             #expect(!L10n.tr(.revealContent, lang: lang).isEmpty)
             #expect(!L10n.tr(.maskedTag, lang: lang).isEmpty)
+            #expect(!L10n.tr(.removeLabel, lang: lang).isEmpty)
+            #expect(!L10n.tr(.save, lang: lang).isEmpty)
         }
     }
 

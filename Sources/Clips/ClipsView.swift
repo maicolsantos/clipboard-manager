@@ -124,22 +124,54 @@ struct ClipsView: View {
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
 
-                TextField(L10n.tr(.labelPlaceholder), text: $labelInput)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 13))
-                    .padding(8)
-                    .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Palette.accent.opacity(0.5), lineWidth: 1)
-                    )
-                    .focused($isLabelInputFocused)
-                    .onSubmit {
-                        submitMask(for: item)
+                HStack(spacing: 8) {
+                    TextField(L10n.tr(.labelPlaceholder), text: $labelInput)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 13))
+                        .focused($isLabelInputFocused)
+                        .onSubmit {
+                            submitMask(for: item)
+                        }
+
+                    if !labelInput.isEmpty {
+                        Button {
+                            labelInput = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help(L10n.tr(.removeLabel))
                     }
+                }
+                .padding(8)
+                .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Palette.accent.opacity(0.5), lineWidth: 1)
+                )
 
                 HStack {
+                    if item.customLabel != nil {
+                        Button {
+                            history.removeLabel(from: item)
+                            history.editingLabelItem = nil
+                            isSearchFocused = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "tag.slash")
+                                    .font(.system(size: 11))
+                                Text(L10n.tr(.removeLabel))
+                                    .font(.system(size: 11, weight: .medium))
+                            }
+                            .foregroundStyle(.red.opacity(0.9))
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     Spacer()
+
                     Button(L10n.tr(.cancel)) {
                         history.editingLabelItem = nil
                         isSearchFocused = true
@@ -152,7 +184,7 @@ struct ClipsView: View {
                     Button {
                         submitMask(for: item)
                     } label: {
-                        Text(L10n.tr(.hide))
+                        Text(item.isMasked ? L10n.tr(.save) : L10n.tr(.hide))
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(Palette.onAccent)
                             .padding(.horizontal, 14)
@@ -311,6 +343,9 @@ struct ClipsView: View {
                                     onUnmask: {
                                         history.unmaskItem(item)
                                     },
+                                    onRemoveLabel: {
+                                        history.removeLabel(from: item)
+                                    },
                                     onDelete: {
                                         history.delete(item)
                                     }
@@ -402,6 +437,7 @@ struct ClipRowView: View {
     let onToggleFavorite: () -> Void
     let onMask: () -> Void
     let onUnmask: () -> Void
+    let onRemoveLabel: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
@@ -421,35 +457,40 @@ struct ClipRowView: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     if let label = item.customLabel, !label.isEmpty {
-                        Button(action: onMask) {
-                            HStack(spacing: 3) {
-                                Image(systemName: "tag.fill")
-                                    .font(.system(size: 8))
-                                Text(label)
-                                    .font(.system(size: 10, weight: .semibold))
+                        HStack(spacing: 4) {
+                            Button(action: onMask) {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "tag.fill")
+                                        .font(.system(size: 8))
+                                    Text(label)
+                                        .font(.system(size: 10, weight: .semibold))
+                                }
                             }
-                            .foregroundStyle(isSelected ? Palette.onAccent : Palette.accent)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                Capsule()
-                                    .fill(isSelected ? Color.white.opacity(0.2) : Palette.accent.opacity(0.12))
-                            )
+                            .buttonStyle(.plain)
+                            .help(L10n.tr(.editLabel))
+
+                            Button(action: onRemoveLabel) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .opacity(0.65)
+                            }
+                            .buttonStyle(.plain)
+                            .help(L10n.tr(.removeLabel))
                         }
-                        .buttonStyle(.plain)
-                        .help(L10n.tr(.editLabel))
+                        .foregroundStyle(isSelected ? Palette.onAccent : Palette.accent)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule()
+                                .fill(isSelected ? Color.white.opacity(0.2) : Palette.accent.opacity(0.12))
+                        )
                     }
 
                     if item.isMasked {
                         Button(action: onUnmask) {
-                            HStack(spacing: 4) {
-                                Text("******")
-                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                Image(systemName: "eye")
-                                    .font(.system(size: 10))
-                                    .opacity(0.7)
-                            }
-                            .foregroundStyle(isSelected ? Palette.onAccent : .primary)
+                            Text("******")
+                                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                .foregroundStyle(isSelected ? Palette.onAccent : .primary)
                         }
                         .buttonStyle(.plain)
                         .help(L10n.tr(.revealContent))
@@ -540,6 +581,12 @@ struct ClipRowView: View {
             } else {
                 Button(action: onMask) {
                     Label(L10n.tr(.hideContent), systemImage: "eye.slash")
+                }
+            }
+
+            if item.customLabel != nil {
+                Button(action: onRemoveLabel) {
+                    Label(L10n.tr(.removeLabel), systemImage: "tag.slash")
                 }
             }
 

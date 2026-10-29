@@ -112,6 +112,8 @@ public enum L10n {
         case removeFromFavorites
         case maskedTag
         case maskDialogDescription
+        case removeLabel
+        case save
 
         var en: String {
             switch self {
@@ -155,6 +157,8 @@ public enum L10n {
             case .removeFromFavorites: return "Remove from Favorites"
             case .maskedTag: return "Hidden"
             case .maskDialogDescription: return "Add a label to identify this clip while hidden:"
+            case .removeLabel: return "Remove Label"
+            case .save: return "Save"
             }
         }
 
@@ -200,6 +204,8 @@ public enum L10n {
             case .removeFromFavorites: return "Remover dos Favoritos"
             case .maskedTag: return "Oculto"
             case .maskDialogDescription: return "Adicione um rótulo para identificar este clipe enquanto estiver oculto:"
+            case .removeLabel: return "Remover Rótulo"
+            case .save: return "Salvar"
             }
         }
 
@@ -245,6 +251,8 @@ public enum L10n {
             case .removeFromFavorites: return "Remover dos Favoritos"
             case .maskedTag: return "Oculto"
             case .maskDialogDescription: return "Adicione uma etiqueta para identificar este clipe enquanto estiver oculto:"
+            case .removeLabel: return "Remover Etiqueta"
+            case .save: return "Guardar"
             }
         }
 
@@ -290,6 +298,8 @@ public enum L10n {
             case .removeFromFavorites: return "Eliminar de Favoritos"
             case .maskedTag: return "Oculto"
             case .maskDialogDescription: return "Añade una etiqueta para identificar este clip mientras esté oculto:"
+            case .removeLabel: return "Eliminar Etiqueta"
+            case .save: return "Guardar"
             }
         }
     }

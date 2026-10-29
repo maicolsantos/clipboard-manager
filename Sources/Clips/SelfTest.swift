@@ -109,6 +109,12 @@ enum SelfTest {
                 check("Search by hidden secret does not leak masked item", !history.filteredItems.contains { $0.id == itemToMask.id })
                 history.searchText = ""
 
+                // Test Remove Label
+                history.maskItem(itemToMask, label: "Temporary Label")
+                check("Custom label set", history.items.first?.customLabel == "Temporary Label")
+                history.removeLabel(from: itemToMask)
+                check("Custom label removed successfully", history.items.first?.customLabel == nil)
+
                 // Reveal / unmask
                 history.unmaskItem(itemToMask)
                 let unmasked = history.items.first
