@@ -1,9 +1,11 @@
 import AppKit
 import SwiftUI
 import ClipsKit
+import UniformTypeIdentifiers
 
 struct ClipsView: View {
     @State private var history = ClipboardHistory.shared
+    @State private var draggedItem: ClipItem?
     @FocusState private var isSearchFocused: Bool
     @FocusState private var isLabelInputFocused: Bool
     @State private var labelInput: String = ""
@@ -325,17 +327,21 @@ struct ClipsView: View {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
-                        LazyVStack(spacing: 3) {
+                        VStack(spacing: 3) {
                             ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                                 ClipRowView(
                                     item: item,
                                     index: index,
                                     isSelected: item.id == history.selectedItemID,
+                                    isFavoritesMode: history.filterFavoritesOnly && history.searchText.isEmpty,
                                     onSelect: {
                                         history.pasteItem(item)
                                     },
                                     onToggleFavorite: {
                                         history.toggleFavorite(item)
+                                    },
+                                    onStartDrag: {
+                                        self.draggedItem = item
                                     },
                                     onMask: {
                                         history.editingLabelItem = item
@@ -351,6 +357,23 @@ struct ClipsView: View {
                                     }
                                 )
                                 .id(item.id)
+                                .opacity(draggedItem?.id == item.id ? 0.35 : 1.0)
+                                .onDrag {
+                                    guard history.filterFavoritesOnly && history.searchText.isEmpty else {
+                                        return NSItemProvider()
+                                    }
+                                    self.draggedItem = item
+                                    return NSItemProvider(object: item.id.uuidString as NSString)
+                                }
+                                .onDrop(
+                                    of: [.text, .plainText, .utf8PlainText],
+                                    delegate: FavoriteDropDelegate(
+                                        item: item,
+                                        history: history,
+                                        draggedItem: $draggedItem,
+                                        isEnabled: history.filterFavoritesOnly && history.searchText.isEmpty
+                                    )
+                                )
                             }
                         }
                         .padding(.horizontal, 10)
@@ -433,15 +456,34 @@ struct ClipRowView: View {
     let item: ClipItem
     let index: Int
     let isSelected: Bool
+    let isFavoritesMode: Bool
     let onSelect: () -> Void
     let onToggleFavorite: () -> Void
+    let onStartDrag: () -> Void
     let onMask: () -> Void
     let onUnmask: () -> Void
     let onRemoveLabel: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
+            // Drag grip (visible in Favorites mode)
+            if isFavoritesMode {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(isSelected ? Palette.onAccent.opacity(0.85) : Color.secondary.opacity(0.65))
+                    .frame(width: 20, height: 26)
+                    .contentShape(Rectangle())
+                    .onDrag {
+                        onStartDrag()
+                        return NSItemProvider(object: item.id.uuidString as NSString)
+                    }
+                    .onTapGesture {
+                        // Prevent accidental paste when clicking the grip handle
+                    }
+                    .help(L10n.tr(.dragToReorder))
+            }
+
             // Star Button
             Button(action: onToggleFavorite) {
                 Image(systemName: item.isFavorite ? "star.fill" : "star")
@@ -654,5 +696,37 @@ struct ClipRowView: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
+    }
+}
+
+// MARK: - FavoriteDropDelegate
+
+struct FavoriteDropDelegate: DropDelegate {
+    let item: ClipItem
+    let history: ClipboardHistory
+    @Binding var draggedItem: ClipItem?
+    let isEnabled: Bool
+
+    func validateDrop(info: DropInfo) -> Bool {
+        return isEnabled
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        guard isEnabled else { return DropProposal(operation: .forbidden) }
+        return DropProposal(operation: .move)
+    }
+
+    func dropEntered(info: DropInfo) {
+        guard isEnabled else { return }
+        guard let dragged = draggedItem, dragged.id != item.id else { return }
+        withAnimation(.snappy(duration: 0.2)) {
+            history.moveItem(from: dragged.id, to: item.id)
+        }
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedItem = nil
+        history.saveNow()
+        return true
     }
 }

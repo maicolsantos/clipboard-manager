@@ -219,6 +219,16 @@ final class ClipboardHistory {
         scheduleSave()
     }
 
+    func moveItem(from sourceID: UUID, to destinationID: UUID) {
+        guard sourceID != destinationID else { return }
+        guard let fromIndex = items.firstIndex(where: { $0.id == sourceID }),
+              let toIndex = items.firstIndex(where: { $0.id == destinationID }),
+              fromIndex != toIndex else { return }
+        let moved = items.remove(at: fromIndex)
+        items.insert(moved, at: toIndex)
+        scheduleSave()
+    }
+
     func delete(_ item: ClipItem) {
         items.removeAll { $0.id == item.id }
         cleanupImageFileIfNeeded(for: item)

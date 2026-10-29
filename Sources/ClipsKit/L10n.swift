@@ -114,6 +114,7 @@ public enum L10n {
         case maskDialogDescription
         case removeLabel
         case save
+        case dragToReorder
 
         var en: String {
             switch self {
@@ -159,6 +160,7 @@ public enum L10n {
             case .maskDialogDescription: return "Add a label to identify this clip while hidden:"
             case .removeLabel: return "Remove Label"
             case .save: return "Save"
+            case .dragToReorder: return "Drag to reorder"
             }
         }
 
@@ -206,6 +208,7 @@ public enum L10n {
             case .maskDialogDescription: return "Adicione um rótulo para identificar este clipe enquanto estiver oculto:"
             case .removeLabel: return "Remover Rótulo"
             case .save: return "Salvar"
+            case .dragToReorder: return "Arrastar para reordenar"
             }
         }
 
@@ -253,6 +256,7 @@ public enum L10n {
             case .maskDialogDescription: return "Adicione uma etiqueta para identificar este clipe enquanto estiver oculto:"
             case .removeLabel: return "Remover Etiqueta"
             case .save: return "Guardar"
+            case .dragToReorder: return "Arrastar para reordenar"
             }
         }
 
@@ -300,6 +304,7 @@ public enum L10n {
             case .maskDialogDescription: return "Añade una etiqueta para identificar este clip mientras esté oculto:"
             case .removeLabel: return "Eliminar Etiqueta"
             case .save: return "Guardar"
+            case .dragToReorder: return "Arrastrar para reordenar"
             }
         }
     }

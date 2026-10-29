@@ -129,6 +129,17 @@ enum SelfTest {
                 history.delete(itemToMask)
             }
 
+            // Test Move Item (Drag & Drop Reordering)
+            let fav1 = ClipItem(kind: .text, textContent: "Fav 1", isFavorite: true)
+            let fav2 = ClipItem(kind: .text, textContent: "Fav 2", isFavorite: true)
+            history.add(fav2)
+            history.add(fav1)
+            check("Fav 1 is first", history.items.first?.id == fav1.id)
+            history.moveItem(from: fav1.id, to: fav2.id)
+            check("Fav 2 is now first after reordering", history.items.first?.id == fav2.id)
+            history.delete(fav1)
+            history.delete(fav2)
+
             print(failures == 0 ? "SELFTEST PASS \(count) checks" : "SELFTEST FAIL \(failures) of \(count) checks")
             finish(code: failures == 0 ? 0 : 1)
         }

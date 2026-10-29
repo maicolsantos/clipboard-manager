@@ -27,6 +27,8 @@ A lightweight, blazing-fast, native macOS clipboard manager built with **SwiftUI
   - Star clips to keep important snippets handy.
   - Press `⌘1` to jump directly to **Favorites**.
   - Press `⌘<` to jump back to **All clips**.
+  - **Drag & Drop Reordering**: Reorder favorite clips by simply dragging and dropping rows.
+  - Reordering automatically updates the `1`..`9` numerical shortcuts to your preferred order.
   - Starred clips are never automatically pruned.
 - **🔍 Instant Filter & Search**: Type anytime to instantly filter clips by text content, source application, or custom label.
 - **🌐 Multi-Language (i18n)**:
