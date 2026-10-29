@@ -11,14 +11,14 @@ final class HotkeyCenter {
     private init() {}
 
     func register() {
-        // Register Option + Command + C
+        // Register Command + Shift + V
         let hotKeyID = EventHotKeyID(signature: OSType(0x434C_4950), id: 1) // 'CLIP'
-        let modifiers = UInt32(cmdKey | optionKey)
-        let keyCode = UInt32(kVK_ANSI_C) // 8
+        let modifiers = UInt32(cmdKey | shiftKey)
+        let keyCode = UInt32(kVK_ANSI_V) // 9
 
         let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef)
         if status != noErr {
-            print("Failed to register hotkey Option-Command-C: status \(status)")
+            print("Failed to register hotkey Command-Shift-V: status \(status)")
         }
 
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))

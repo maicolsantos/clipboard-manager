@@ -17,15 +17,22 @@ public enum SyntheticPaste {
     public static let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
 
     public static func postPasteCommand() {
-        let source = CGEventSource(stateID: .privateState)
-        source?.userData = marker
-        // 0x09 is kVK_ANSI_V
-        for down in [true, false] {
-            if let event = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: down) {
-                event.flags = .maskCommand
-                event.setIntegerValueField(.eventSourceUserData, value: marker)
-                event.post(tap: .cgSessionEventTap)
-            }
+        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
+        source.userData = marker
+        let vKeyCode: CGKeyCode = 0x09 // kVK_ANSI_V
+
+        if let down = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: true) {
+            down.flags = .maskCommand
+            down.setIntegerValueField(.eventSourceUserData, value: marker)
+            down.post(tap: .cgSessionEventTap)
+            down.post(tap: .cghidEventTap)
+        }
+
+        if let up = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: false) {
+            up.flags = []
+            up.setIntegerValueField(.eventSourceUserData, value: marker)
+            up.post(tap: .cgSessionEventTap)
+            up.post(tap: .cghidEventTap)
         }
     }
 }

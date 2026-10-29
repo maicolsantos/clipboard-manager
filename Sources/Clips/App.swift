@@ -16,15 +16,21 @@ struct ClipsApp: App {
 
     var body: some Scene {
         MenuBarExtra("Clips", systemImage: "clipboard") {
-            Button("Open Clips (⌥⌘C)") {
+            Button("Open Clips (⌘⇧V)") {
                 FloatingPanelController.shared.toggle()
             }
-            .keyboardShortcut("c", modifiers: [.option, .command])
+            .keyboardShortcut("v", modifiers: [.command, .shift])
 
-            Button("Favorites") {
+            Button("All Clips (⌘<)") {
+                history.filterFavoritesOnly = false
+                FloatingPanelController.shared.show()
+            }
+
+            Button("Favorites (⌘1)") {
                 history.filterFavoritesOnly = true
                 FloatingPanelController.shared.show()
             }
+            .keyboardShortcut("1", modifiers: [.command])
 
             Divider()
 

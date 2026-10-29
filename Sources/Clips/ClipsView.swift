@@ -24,8 +24,8 @@ struct ClipsView: View {
         .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
         .onAppear {
             isSearchFocused = true
-            if history.selectedItemID == nil, let first = history.filteredItems.first {
-                history.selectedItemID = first.id
+            if history.selectedItemID == nil {
+                history.selectFirstItem()
             }
         }
         .onKeyPress(.escape) {
@@ -33,23 +33,19 @@ struct ClipsView: View {
             return .handled
         }
         .onKeyPress(.return) {
-            if let selected = currentSelectedItem {
-                history.pasteItem(selected)
-                return .handled
-            }
-            return .ignored
+            history.pasteCurrentSelectedItem()
+            return .handled
         }
         .onKeyPress(.upArrow) {
-            moveSelection(delta: -1)
+            history.moveSelection(delta: -1)
             return .handled
         }
         .onKeyPress(.downArrow) {
-            moveSelection(delta: 1)
+            history.moveSelection(delta: 1)
             return .handled
         }
         .onKeyPress(characters: CharacterSet(charactersIn: "123456789")) { press in
-            // When Cmd is down or search is empty, paste the corresponding number
-            if let digit = Int(press.characters), digit >= 1 && digit <= 9 {
+            if history.searchText.isEmpty, let digit = Int(press.characters), digit >= 1 && digit <= 9 {
                 let items = history.filteredItems
                 let index = digit - 1
                 if index < items.count {
@@ -62,20 +58,11 @@ struct ClipsView: View {
     }
 
     private var currentSelectedItem: ClipItem? {
-        let items = history.filteredItems
-        if let id = history.selectedItemID, let match = items.first(where: { $0.id == id }) {
-            return match
-        }
-        return items.first
+        history.currentSelectedItem
     }
 
     private func moveSelection(delta: Int) {
-        let items = history.filteredItems
-        guard !items.isEmpty else { return }
-
-        let currentIndex = items.firstIndex(where: { $0.id == history.selectedItemID }) ?? 0
-        let nextIndex = min(max(currentIndex + delta, 0), items.count - 1)
-        history.selectedItemID = items[nextIndex].id
+        history.moveSelection(delta: delta)
     }
 
     // MARK: - Header Bar
@@ -84,11 +71,13 @@ struct ClipsView: View {
         HStack(spacing: 12) {
             // Filter Pills
             HStack(spacing: 4) {
-                filterButton(title: "All", isSelected: !history.filterFavoritesOnly) {
+                filterButton(title: "All", hint: "⌘<", isSelected: !history.filterFavoritesOnly) {
                     history.filterFavoritesOnly = false
+                    history.selectFirstItem()
                 }
-                filterButton(title: "Favorites", systemImage: "star.fill", isSelected: history.filterFavoritesOnly) {
+                filterButton(title: "Favorites", hint: "⌘1", systemImage: "star.fill", isSelected: history.filterFavoritesOnly) {
                     history.filterFavoritesOnly = true
+                    history.selectFirstItem()
                 }
             }
             .padding(2)
@@ -136,7 +125,7 @@ struct ClipsView: View {
         .padding(.vertical, 12)
     }
 
-    private func filterButton(title: String, systemImage: String? = nil, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    private func filterButton(title: String, hint: String? = nil, systemImage: String? = nil, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 4) {
                 if let systemImage {
@@ -145,6 +134,11 @@ struct ClipsView: View {
                 }
                 Text(title)
                     .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                if let hint {
+                    Text(hint)
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .opacity(isSelected ? 0.9 : 0.5)
+                }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
@@ -185,9 +179,6 @@ struct ClipsView: View {
                                     index: index,
                                     isSelected: item.id == history.selectedItemID,
                                     onSelect: {
-                                        history.selectedItemID = item.id
-                                    },
-                                    onDoubleClick: {
                                         history.pasteItem(item)
                                     },
                                     onToggleFavorite: {
@@ -216,15 +207,16 @@ struct ClipsView: View {
     // MARK: - Footer Bar
 
     private var footerBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             shortcutHint(key: "1..9", desc: "Quick paste")
             shortcutHint(key: "↩", desc: "Paste")
-            shortcutHint(key: "⌘↩", desc: "Copy only")
             shortcutHint(key: "Esc", desc: "Close")
+            shortcutHint(key: "⌘1", desc: "Favorites")
+            shortcutHint(key: "⌘<", desc: "All")
 
             Spacer()
 
-            if let item = currentSelectedItem {
+            if let item = history.currentSelectedItem {
                 Button {
                     history.delete(item)
                 } label: {
@@ -233,7 +225,7 @@ struct ClipsView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .help("Delete clip (⌘⌫)")
+                .help("Delete clip")
             }
 
             // Accessibility Status
@@ -280,7 +272,6 @@ struct ClipRowView: View {
     let index: Int
     let isSelected: Bool
     let onSelect: () -> Void
-    let onDoubleClick: () -> Void
     let onToggleFavorite: () -> Void
     let onDelete: () -> Void
 
@@ -342,9 +333,6 @@ struct ClipRowView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             onSelect()
-        }
-        .onTapGesture(count: 2) {
-            onDoubleClick()
         }
     }
 

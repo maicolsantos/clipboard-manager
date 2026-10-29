@@ -58,6 +58,20 @@ enum SelfTest {
             check("Search filters out non-matches", history.filteredItems.isEmpty)
             history.searchText = ""
 
+            // Test selection navigation
+            let itemA = ClipItem(kind: .text, textContent: "Item A")
+            let itemB = ClipItem(kind: .text, textContent: "Item B")
+            history.add(itemB)
+            history.add(itemA)
+            history.selectFirstItem()
+            check("selectFirstItem selects top item", history.selectedItemID == itemA.id)
+            history.moveSelection(delta: 1)
+            check("moveSelection down selects next item", history.selectedItemID == itemB.id)
+            history.moveSelection(delta: -1)
+            check("moveSelection up selects first item", history.selectedItemID == itemA.id)
+            history.delete(itemA)
+            history.delete(itemB)
+
             // Test deletion
             if let first = history.items.first {
                 history.delete(first)

@@ -220,12 +220,47 @@ final class ClipboardHistory {
         }
     }
 
+    var currentSelectedItem: ClipItem? {
+        let current = filteredItems
+        if let id = selectedItemID, let match = current.first(where: { $0.id == id }) {
+            return match
+        }
+        return current.first
+    }
+
+    func selectFirstItem() {
+        selectedItemID = filteredItems.first?.id
+    }
+
+    func moveSelection(delta: Int) {
+        let current = filteredItems
+        guard !current.isEmpty else { return }
+
+        let currentIndex = current.firstIndex(where: { $0.id == selectedItemID }) ?? 0
+        let nextIndex = min(max(currentIndex + delta, 0), current.count - 1)
+        selectedItemID = current[nextIndex].id
+    }
+
+    func pasteCurrentSelectedItem() {
+        if let selected = currentSelectedItem {
+            pasteItem(selected)
+        }
+    }
+
     func pasteItem(_ item: ClipItem) {
         copyToPasteboard(item)
+        let targetApp = FloatingPanelController.shared.previousApp
         FloatingPanelController.shared.hide()
 
-        // Give panel time to close before sending simulated Command-V to previous app
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
+        // Reactivate target app so simulated paste arrives at the right destination
+        if let targetApp, !targetApp.isTerminated {
+            targetApp.activate()
+        } else {
+            NSApp.hide(nil)
+        }
+
+        // Give previous app time to receive focus before sending simulated Command-V
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
             if SyntheticPaste.isAccessibilityGranted {
                 SyntheticPaste.postPasteCommand()
             } else {
