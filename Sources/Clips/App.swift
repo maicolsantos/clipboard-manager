@@ -40,8 +40,9 @@ struct ClipsApp: App {
 
             Divider()
 
-            SettingsLink {
-                Text("Settings...")
+            Button("Settings...") {
+                NSApp.activate(ignoringOtherApps: true)
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
             }
             .keyboardShortcut(",")
 

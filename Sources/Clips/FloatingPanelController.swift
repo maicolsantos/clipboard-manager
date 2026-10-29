@@ -98,7 +98,8 @@ final class FloatingPanelController: NSObject {
 
     private(set) var panel: ClipboardFloatingPanel?
     private(set) var previousApp: NSRunningApplication?
-    private var globalMonitor: Any?
+    private var globalKeyMonitor: Any?
+    private var globalMouseMonitor: Any?
 
     private override init() {
         super.init()
@@ -123,9 +124,16 @@ final class FloatingPanelController: NSObject {
         p.isMovableByWindowBackground = true
         p.isFloatingPanel = true
         p.level = .popUpMenu // Always on top of everything
-        p.hidesOnDeactivate = false
+        p.hidesOnDeactivate = true
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         p.contentView = hostingView
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(panelDidResignKey),
+            name: NSWindow.didResignKeyNotification,
+            object: p
+        )
 
         self.panel = p
     }
@@ -174,17 +182,30 @@ final class FloatingPanelController: NSObject {
         p.makeKey()
         NSApp.activate(ignoringOtherApps: true)
 
-        startGlobalMonitor()
+        startGlobalMonitors()
     }
 
     func hide() {
-        stopGlobalMonitor()
+        stopGlobalMonitors()
         panel?.orderOut(nil)
     }
 
-    private func startGlobalMonitor() {
-        stopGlobalMonitor()
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+    @objc private func panelDidResignKey(_ notification: Notification) {
+        hide()
+    }
+
+    private func startGlobalMonitors() {
+        stopGlobalMonitors()
+
+        // Hide when clicking anywhere outside the window
+        globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
+            Task { @MainActor in
+                self?.hide()
+            }
+        }
+
+        // Hide when Escape is pressed
+        globalKeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == 53 { // Escape
                 Task { @MainActor in
                     self?.hide()
@@ -193,10 +214,14 @@ final class FloatingPanelController: NSObject {
         }
     }
 
-    private func stopGlobalMonitor() {
-        if let monitor = globalMonitor {
+    private func stopGlobalMonitors() {
+        if let monitor = globalKeyMonitor {
             NSEvent.removeMonitor(monitor)
-            globalMonitor = nil
+            globalKeyMonitor = nil
+        }
+        if let monitor = globalMouseMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalMouseMonitor = nil
         }
     }
 }

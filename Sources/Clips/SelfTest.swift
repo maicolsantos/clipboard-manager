@@ -78,6 +78,9 @@ enum SelfTest {
                 check("Deleting item removes it", history.items.count == beforeCount)
             }
 
+            // Test history limit
+            check("Default history limit is 100", history.historyLimit == 100)
+
             // Test sensitive type filter
             check("ConcealedType is filtered", PasteboardFilter.shouldIgnore(types: ["org.nspasteboard.ConcealedType"]))
             check("1Password is filtered", PasteboardFilter.shouldIgnore(types: ["com.agilebits.onepassword"]))

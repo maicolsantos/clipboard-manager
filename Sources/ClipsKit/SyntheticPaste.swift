@@ -25,14 +25,12 @@ public enum SyntheticPaste {
             down.flags = .maskCommand
             down.setIntegerValueField(.eventSourceUserData, value: marker)
             down.post(tap: .cgSessionEventTap)
-            down.post(tap: .cghidEventTap)
         }
 
         if let up = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: false) {
             up.flags = []
             up.setIntegerValueField(.eventSourceUserData, value: marker)
             up.post(tap: .cgSessionEventTap)
-            up.post(tap: .cghidEventTap)
         }
     }
 }

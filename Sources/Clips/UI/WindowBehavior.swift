@@ -16,6 +16,38 @@ extension View {
     func fitsContent(max: CGFloat = 640) -> some View {
         modifier(FitsContent(max: max))
     }
+
+    /// Brings the window to the front and sets floating level so it stays visible
+    /// above other applications when opened by an accessory app.
+    func bringWindowToFrontOnOpen() -> some View {
+        background(BringToFrontHook())
+    }
+}
+
+private struct BringToFrontHook: NSViewRepresentable {
+    func makeNSView(context: Context) -> Probe { Probe() }
+    func updateNSView(_ probe: Probe, context: Context) {}
+
+    final class Probe: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window else { return }
+            DispatchQueue.main.async {
+                NSApp.activate(ignoringOtherApps: true)
+                window.level = .floating
+                window.orderFrontRegardless()
+                window.makeKeyAndOrderFront(nil)
+            }
+            NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKey),
+                                                   name: NSWindow.didBecomeKeyNotification, object: window)
+        }
+
+        @objc private func didBecomeKey(_ note: Notification) {
+            guard let window else { return }
+            window.level = .floating
+            window.orderFrontRegardless()
+        }
+    }
 }
 
 private struct FitsContent: ViewModifier {

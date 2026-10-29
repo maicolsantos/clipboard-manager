@@ -142,8 +142,8 @@ final class ClipboardHistory {
 
         items.insert(item, at: 0)
 
-        // Limit to 200 items (preserving favorites)
-        let limit = 200
+        // Limit to historyLimit items (default 100, preserving favorites)
+        let limit = historyLimit
         if items.count > limit {
             for i in stride(from: items.count - 1, through: limit, by: -1) {
                 if !items[i].isFavorite {
@@ -154,6 +154,24 @@ final class ClipboardHistory {
         }
 
         scheduleSave()
+    }
+
+    var historyLimit: Int {
+        let val = UserDefaults.standard.integer(forKey: "historyLimit")
+        return val > 0 ? val : 100
+    }
+
+    func enforceLimit() {
+        let limit = historyLimit
+        if items.count > limit {
+            for i in stride(from: items.count - 1, through: limit, by: -1) {
+                if !items[i].isFavorite {
+                    let removed = items.remove(at: i)
+                    cleanupImageFileIfNeeded(for: removed)
+                }
+            }
+            scheduleSave()
+        }
     }
 
     func toggleFavorite(_ item: ClipItem) {
@@ -218,6 +236,9 @@ final class ClipboardHistory {
                 pb.writeObjects(urls)
             }
         }
+
+        // Keep lastChangeCount in sync so Clips does not detect its own copy as a new clip
+        lastChangeCount = pb.changeCount
     }
 
     var currentSelectedItem: ClipItem? {

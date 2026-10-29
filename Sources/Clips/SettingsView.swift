@@ -16,6 +16,7 @@ struct SettingsView: View {
             }
         }
         .noInitialFocus()
+        .bringWindowToFrontOnOpen()
     }
 
     @ViewBuilder
@@ -54,9 +55,24 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 }
 
 struct GeneralSettings: View {
+    @AppStorage("historyLimit") private var historyLimit = 100
     @AppStorage("confirmDelete") private var confirmDelete = true
 
     var body: some View {
+        Section("History") {
+            Picker("History limit", selection: $historyLimit) {
+                Text("25 items").tag(25)
+                Text("50 items").tag(50)
+                Text("100 items (default)").tag(100)
+                Text("200 items").tag(200)
+                Text("500 items").tag(500)
+                Text("1000 items").tag(1000)
+            }
+            .onChange(of: historyLimit) { _, _ in
+                ClipboardHistory.shared.enforceLimit()
+            }
+        }
+
         Section("Items") {
             Toggle("Ask before deleting items", isOn: $confirmDelete)
         }
