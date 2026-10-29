@@ -32,6 +32,7 @@ private struct BringToFrontHook: NSViewRepresentable {
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             guard let window else { return }
+            NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil)
             DispatchQueue.main.async {
                 NSApp.activate(ignoringOtherApps: true)
                 window.level = .floating
@@ -46,6 +47,10 @@ private struct BringToFrontHook: NSViewRepresentable {
             guard let window else { return }
             window.level = .floating
             window.orderFrontRegardless()
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
         }
     }
 }

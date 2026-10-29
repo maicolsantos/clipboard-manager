@@ -17,13 +17,18 @@ final class ClipboardHistory {
     private var lastChangeCount: Int = -1
     private var saveTask: Task<Void, Never>?
 
+    private let thumbnailCache = NSCache<NSString, NSImage>()
+
     private var storageDirectory: URL {
         if let custom = ProcessInfo.processInfo.environment["APP_STORE"], !custom.isEmpty {
             return URL(fileURLWithPath: custom).deletingLastPathComponent()
         }
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support")
         let dir = appSupport.appendingPathComponent("Clips", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        // Ensure secure directory permissions (owner-only read/write)
+        try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: dir.path)
         return dir
     }
 
@@ -200,6 +205,7 @@ final class ClipboardHistory {
         guard let fileName = item.imageFileName else { return }
         let stillUsed = items.contains { $0.imageFileName == fileName }
         if !stillUsed {
+            thumbnailCache.removeObject(forKey: fileName as NSString)
             let path = imagesDirectory.appendingPathComponent(fileName)
             try? FileManager.default.removeItem(at: path)
         }
@@ -207,6 +213,24 @@ final class ClipboardHistory {
 
     func imageURL(for fileName: String) -> URL {
         imagesDirectory.appendingPathComponent(fileName)
+    }
+
+    func thumbnail(for fileName: String) -> NSImage? {
+        let key = fileName as NSString
+        if let cached = thumbnailCache.object(forKey: key) {
+            return cached
+        }
+        let url = imageURL(for: fileName)
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceThumbnailMaxPixelSize: 128,
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true
+        ]
+        guard let cgThumb = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        let thumb = NSImage(cgImage: cgThumb, size: NSSize(width: 32, height: 32))
+        thumbnailCache.setObject(thumb, forKey: key)
+        return thumb
     }
 
     // MARK: - Copy Back & Paste
@@ -317,7 +341,7 @@ final class ClipboardHistory {
     func saveNow() {
         do {
             let data = try JSONEncoder().encode(items)
-            try data.write(to: storageFile, options: .atomic)
+            try data.write(to: storageFile, options: [.atomic, .completeFileProtection])
         } catch {
             print("Failed to save clipboard history: \(error)")
         }

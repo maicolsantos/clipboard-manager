@@ -341,9 +341,8 @@ struct ClipRowView: View {
         switch item.kind {
         case .image:
             if let fileName = item.imageFileName {
-                let url = ClipboardHistory.shared.imageURL(for: fileName)
-                if let nsImage = NSImage(contentsOf: url) {
-                    Image(nsImage: nsImage)
+                if let thumb = ClipboardHistory.shared.thumbnail(for: fileName) {
+                    Image(nsImage: thumb)
                         .resizable()
                         .scaledToFill()
                         .frame(width: 32, height: 32)

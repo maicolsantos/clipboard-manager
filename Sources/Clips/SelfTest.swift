@@ -84,6 +84,9 @@ enum SelfTest {
             // Test sensitive type filter
             check("ConcealedType is filtered", PasteboardFilter.shouldIgnore(types: ["org.nspasteboard.ConcealedType"]))
             check("1Password is filtered", PasteboardFilter.shouldIgnore(types: ["com.agilebits.onepassword"]))
+            check("Bitwarden is filtered", PasteboardFilter.shouldIgnore(types: ["com.bitwarden.pasteboard.concealed"]))
+            check("KeePassXC is filtered", PasteboardFilter.shouldIgnore(types: ["net.keepassxc.keepassxc"]))
+            check("TransientType is filtered", PasteboardFilter.shouldIgnore(types: ["org.nspasteboard.TransientType"]))
 
             print(failures == 0 ? "SELFTEST PASS \(count) checks" : "SELFTEST FAIL \(failures) of \(count) checks")
             finish(code: failures == 0 ? 0 : 1)

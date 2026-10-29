@@ -6,11 +6,14 @@ final class HotkeyCenter {
     static let shared = HotkeyCenter()
 
     private var hotKeyRef: EventHotKeyRef?
+    private var eventHandlerRef: EventHandlerRef?
     var onTrigger: (@MainActor () -> Void)?
 
     private init() {}
 
     func register() {
+        unregister()
+
         // Register Command + Shift + V
         let hotKeyID = EventHotKeyID(signature: OSType(0x434C_4950), id: 1) // 'CLIP'
         let modifiers = UInt32(cmdKey | shiftKey)
@@ -27,13 +30,17 @@ final class HotkeyCenter {
                 HotkeyCenter.shared.onTrigger?()
             }
             return noErr
-        }, 1, &spec, nil, nil)
+        }, 1, &spec, nil, &eventHandlerRef)
     }
 
     func unregister() {
         if let ref = hotKeyRef {
             UnregisterEventHotKey(ref)
             hotKeyRef = nil
+        }
+        if let handler = eventHandlerRef {
+            RemoveEventHandler(handler)
+            eventHandlerRef = nil
         }
     }
 }
