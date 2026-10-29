@@ -129,12 +129,6 @@ enum SelfTest {
                 history.delete(itemToMask)
             }
 
-            // Test SettingsWindowController
-            SettingsWindowController.shared.show(model: model)
-            check("SettingsWindowController opens window", NSApp.windows.contains { w in
-                w.title.contains("Setting") || w.title.contains("Config") || w.title.contains("Ajust") || w.title.contains("Defin")
-            })
-
             print(failures == 0 ? "SELFTEST PASS \(count) checks" : "SELFTEST FAIL \(failures) of \(count) checks")
             finish(code: failures == 0 ? 0 : 1)
         }

@@ -64,7 +64,8 @@ final class ClipboardFloatingPanel: NSPanel {
 
             // Cmd + ,: Open Settings
             if (event.keyCode == UInt16(kVK_ANSI_Comma) && !flags.contains(.shift)) || event.charactersIgnoringModifiers == "," {
-                SettingsWindowController.shared.show()
+                NSApp.activate(ignoringOtherApps: true)
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
                 return true
             }
         }
