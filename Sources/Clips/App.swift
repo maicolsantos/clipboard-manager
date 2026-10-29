@@ -42,8 +42,7 @@ struct ClipsApp: App {
             Divider()
 
             Button(L10n.tr(.settings)) {
-                NSApp.activate(ignoringOtherApps: true)
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                SettingsWindowController.shared.show(model: model)
             }
             .keyboardShortcut(",")
 

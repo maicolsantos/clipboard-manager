@@ -61,6 +61,12 @@ final class ClipboardFloatingPanel: NSPanel {
                 ClipboardHistory.shared.selectFirstItem()
                 return true
             }
+
+            // Cmd + ,: Open Settings
+            if (event.keyCode == UInt16(kVK_ANSI_Comma) && !flags.contains(.shift)) || event.charactersIgnoringModifiers == "," {
+                SettingsWindowController.shared.show()
+                return true
+            }
         }
 
         // 4. Up Arrow: Move selection up
