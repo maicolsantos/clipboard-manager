@@ -20,6 +20,12 @@ struct L10nTests {
             #expect(!L10n.tr(.language, lang: lang).isEmpty)
             #expect(!L10n.tr(.history, lang: lang).isEmpty)
             #expect(!L10n.tr(.historyLimit, lang: lang).isEmpty)
+            #expect(!L10n.tr(.hideContent, lang: lang).isEmpty)
+            #expect(!L10n.tr(.hide, lang: lang).isEmpty)
+            #expect(!L10n.tr(.cancel, lang: lang).isEmpty)
+            #expect(!L10n.tr(.labelPlaceholder, lang: lang).isEmpty)
+            #expect(!L10n.tr(.revealContent, lang: lang).isEmpty)
+            #expect(!L10n.tr(.maskedTag, lang: lang).isEmpty)
         }
     }
 

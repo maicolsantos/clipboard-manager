@@ -102,6 +102,16 @@ public enum L10n {
         case accentColor
         case itemsCount(Int)
         case defaultOption(Int)
+        case hideContent
+        case hide
+        case cancel
+        case labelPlaceholder
+        case revealContent
+        case editLabel
+        case addToFavorites
+        case removeFromFavorites
+        case maskedTag
+        case maskDialogDescription
 
         var en: String {
             switch self {
@@ -135,6 +145,16 @@ public enum L10n {
             case .accentColor: return "Accent color"
             case .itemsCount(let n): return "\(n) items"
             case .defaultOption(let n): return "\(n) items (default)"
+            case .hideContent: return "Hide Content"
+            case .hide: return "Hide"
+            case .cancel: return "Cancel"
+            case .labelPlaceholder: return "Label (e.g. API Key, Password)"
+            case .revealContent: return "Reveal Content"
+            case .editLabel: return "Edit Label..."
+            case .addToFavorites: return "Add to Favorites"
+            case .removeFromFavorites: return "Remove from Favorites"
+            case .maskedTag: return "Hidden"
+            case .maskDialogDescription: return "Add a label to identify this clip while hidden:"
             }
         }
 
@@ -170,6 +190,16 @@ public enum L10n {
             case .accentColor: return "Cor de destaque"
             case .itemsCount(let n): return "\(n) itens"
             case .defaultOption(let n): return "\(n) itens (padrão)"
+            case .hideContent: return "Ocultar Conteúdo"
+            case .hide: return "Ocultar"
+            case .cancel: return "Cancelar"
+            case .labelPlaceholder: return "Rótulo (ex: Chave API, Senha)"
+            case .revealContent: return "Revelar Conteúdo"
+            case .editLabel: return "Editar Rótulo..."
+            case .addToFavorites: return "Adicionar aos Favoritos"
+            case .removeFromFavorites: return "Remover dos Favoritos"
+            case .maskedTag: return "Oculto"
+            case .maskDialogDescription: return "Adicione um rótulo para identificar este clipe enquanto estiver oculto:"
             }
         }
 
@@ -205,6 +235,16 @@ public enum L10n {
             case .accentColor: return "Cor de destaque"
             case .itemsCount(let n): return "\(n) itens"
             case .defaultOption(let n): return "\(n) itens (predefinição)"
+            case .hideContent: return "Ocultar Conteúdo"
+            case .hide: return "Ocultar"
+            case .cancel: return "Cancelar"
+            case .labelPlaceholder: return "Etiqueta (ex: Chave API, Palavra-passe)"
+            case .revealContent: return "Revelar Conteúdo"
+            case .editLabel: return "Editar Etiqueta..."
+            case .addToFavorites: return "Adicionar aos Favoritos"
+            case .removeFromFavorites: return "Remover dos Favoritos"
+            case .maskedTag: return "Oculto"
+            case .maskDialogDescription: return "Adicione uma etiqueta para identificar este clipe enquanto estiver oculto:"
             }
         }
 
@@ -240,6 +280,16 @@ public enum L10n {
             case .accentColor: return "Color de acento"
             case .itemsCount(let n): return "\(n) elementos"
             case .defaultOption(let n): return "\(n) elementos (predeterminado)"
+            case .hideContent: return "Ocultar Contenido"
+            case .hide: return "Ocultar"
+            case .cancel: return "Cancelar"
+            case .labelPlaceholder: return "Etiqueta (ej: Clave API, Contraseña)"
+            case .revealContent: return "Mostrar Contenido"
+            case .editLabel: return "Editar Etiqueta..."
+            case .addToFavorites: return "Añadir a Favoritos"
+            case .removeFromFavorites: return "Eliminar de Favoritos"
+            case .maskedTag: return "Oculto"
+            case .maskDialogDescription: return "Añade una etiqueta para identificar este clip mientras esté oculto:"
             }
         }
     }

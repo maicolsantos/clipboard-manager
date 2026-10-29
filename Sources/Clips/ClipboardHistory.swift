@@ -12,6 +12,7 @@ final class ClipboardHistory {
     var searchText: String = ""
     var filterFavoritesOnly: Bool = false
     var selectedItemID: UUID?
+    var editingLabelItem: ClipItem?
 
     private var timer: Timer?
     private var lastChangeCount: Int = -1
@@ -182,6 +183,35 @@ final class ClipboardHistory {
     func toggleFavorite(_ item: ClipItem) {
         guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
         items[idx].isFavorite.toggle()
+        scheduleSave()
+    }
+
+    func maskItem(_ item: ClipItem, label: String?) {
+        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
+        items[idx].isMasked = true
+        let trimmed = label?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmed, !trimmed.isEmpty {
+            items[idx].customLabel = trimmed
+        }
+        scheduleSave()
+    }
+
+    func unmaskItem(_ item: ClipItem) {
+        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
+        items[idx].isMasked = false
+        scheduleSave()
+    }
+
+    func toggleMask(_ item: ClipItem) {
+        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
+        items[idx].isMasked.toggle()
+        scheduleSave()
+    }
+
+    func updateLabel(_ item: ClipItem, label: String?) {
+        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
+        let trimmed = label?.trimmingCharacters(in: .whitespacesAndNewlines)
+        items[idx].customLabel = (trimmed?.isEmpty ?? true) ? nil : trimmed
         scheduleSave()
     }
 

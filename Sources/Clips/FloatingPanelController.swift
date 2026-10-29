@@ -20,6 +20,15 @@ final class ClipboardFloatingPanel: NSPanel {
     }
 
     private func handleKeyDown(_ event: NSEvent) -> Bool {
+        // If the label dialog is open, let the dialog handle keys (Esc cancels dialog)
+        if ClipboardHistory.shared.editingLabelItem != nil {
+            if event.keyCode == 53 { // Escape
+                ClipboardHistory.shared.editingLabelItem = nil
+                return true
+            }
+            return false
+        }
+
         // 1. Esc: Close clipboard
         if event.keyCode == 53 { // kVK_Escape
             FloatingPanelController.shared.hide()
@@ -191,6 +200,9 @@ final class FloatingPanelController: NSObject {
     }
 
     @objc private func panelDidResignKey(_ notification: Notification) {
+        if ClipboardHistory.shared.editingLabelItem != nil {
+            return
+        }
         hide()
     }
 

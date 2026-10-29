@@ -88,6 +88,35 @@ enum SelfTest {
             check("KeePassXC is filtered", PasteboardFilter.shouldIgnore(types: ["net.keepassxc.keepassxc"]))
             check("TransientType is filtered", PasteboardFilter.shouldIgnore(types: ["org.nspasteboard.TransientType"]))
 
+            // Test Masking, Custom Label, and Reveal
+            let secretItem = ClipItem(kind: .text, textContent: "ghp_1234567890SecretToken")
+            history.add(secretItem)
+            check("Secret item added", history.items.first?.textContent == "ghp_1234567890SecretToken")
+
+            if let itemToMask = history.items.first {
+                history.maskItem(itemToMask, label: "GitHub PAT")
+                let masked = history.items.first
+                check("Masked item has isMasked = true", masked?.isMasked == true)
+                check("Masked item has custom label", masked?.customLabel == "GitHub PAT")
+                check("Masked item preview is ******", masked?.preview == "******")
+                check("Underlying textContent is intact", masked?.textContent == "ghp_1234567890SecretToken")
+
+                // Search by label
+                history.searchText = "GitHub PAT"
+                check("Search matches custom label when masked", history.filteredItems.contains { $0.id == itemToMask.id })
+                // Search by hidden secret does not match
+                history.searchText = "1234567890SecretToken"
+                check("Search by hidden secret does not leak masked item", !history.filteredItems.contains { $0.id == itemToMask.id })
+                history.searchText = ""
+
+                // Reveal / unmask
+                history.unmaskItem(itemToMask)
+                let unmasked = history.items.first
+                check("Unmasked item has isMasked = false", unmasked?.isMasked == false)
+                check("Unmasked item preview shows original text", unmasked?.preview == "ghp_1234567890SecretToken")
+                history.delete(itemToMask)
+            }
+
             print(failures == 0 ? "SELFTEST PASS \(count) checks" : "SELFTEST FAIL \(failures) of \(count) checks")
             finish(code: failures == 0 ? 0 : 1)
         }

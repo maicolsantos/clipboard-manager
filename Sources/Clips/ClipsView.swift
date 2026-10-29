@@ -5,15 +5,23 @@ import ClipsKit
 struct ClipsView: View {
     @State private var history = ClipboardHistory.shared
     @FocusState private var isSearchFocused: Bool
+    @FocusState private var isLabelInputFocused: Bool
+    @State private var labelInput: String = ""
     @AppStorage("appLanguage") private var appLanguage: String = "system"
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerBar
-            Divider().opacity(0.3)
-            contentList
-            Divider().opacity(0.3)
-            footerBar
+        ZStack {
+            VStack(spacing: 0) {
+                headerBar
+                Divider().opacity(0.3)
+                contentList
+                Divider().opacity(0.3)
+                footerBar
+            }
+
+            if let item = history.editingLabelItem {
+                labelModal(for: item)
+            }
         }
         .frame(width: 700, height: 440)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -30,22 +38,39 @@ struct ClipsView: View {
             }
         }
         .onKeyPress(.escape) {
+            if history.editingLabelItem != nil {
+                history.editingLabelItem = nil
+                isSearchFocused = true
+                return .handled
+            }
             FloatingPanelController.shared.hide()
             return .handled
         }
         .onKeyPress(.return) {
+            if history.editingLabelItem != nil {
+                return .ignored
+            }
             history.pasteCurrentSelectedItem()
             return .handled
         }
         .onKeyPress(.upArrow) {
+            if history.editingLabelItem != nil {
+                return .ignored
+            }
             history.moveSelection(delta: -1)
             return .handled
         }
         .onKeyPress(.downArrow) {
+            if history.editingLabelItem != nil {
+                return .ignored
+            }
             history.moveSelection(delta: 1)
             return .handled
         }
         .onKeyPress(characters: CharacterSet(charactersIn: "123456789")) { press in
+            if history.editingLabelItem != nil {
+                return .ignored
+            }
             if history.searchText.isEmpty, let digit = Int(press.characters), digit >= 1 && digit <= 9 {
                 let items = history.filteredItems
                 let index = digit - 1
@@ -64,6 +89,101 @@ struct ClipsView: View {
 
     private func moveSelection(delta: Int) {
         history.moveSelection(delta: delta)
+    }
+
+    // MARK: - Label Modal
+
+    private func labelModal(for item: ClipItem) -> some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    history.editingLabelItem = nil
+                    isSearchFocused = true
+                }
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 8) {
+                    Image(systemName: "eye.slash.fill")
+                        .foregroundStyle(Palette.accent)
+                        .font(.system(size: 15))
+                    Text(L10n.tr(.hideContent))
+                        .font(.system(size: 14, weight: .bold))
+                    Spacer()
+                    Button {
+                        history.editingLabelItem = nil
+                        isSearchFocused = true
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Text(L10n.tr(.maskDialogDescription))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+
+                TextField(L10n.tr(.labelPlaceholder), text: $labelInput)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13))
+                    .padding(8)
+                    .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Palette.accent.opacity(0.5), lineWidth: 1)
+                    )
+                    .focused($isLabelInputFocused)
+                    .onSubmit {
+                        submitMask(for: item)
+                    }
+
+                HStack {
+                    Spacer()
+                    Button(L10n.tr(.cancel)) {
+                        history.editingLabelItem = nil
+                        isSearchFocused = true
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.primary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+
+                    Button {
+                        submitMask(for: item)
+                    } label: {
+                        Text(L10n.tr(.hide))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Palette.onAccent)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(Palette.accent, in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(18)
+            .frame(width: 360)
+            .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.primary.opacity(0.18), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.35), radius: 24, x: 0, y: 12)
+        }
+        .onAppear {
+            labelInput = item.customLabel ?? ""
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(50))
+                isLabelInputFocused = true
+            }
+        }
+    }
+
+    private func submitMask(for item: ClipItem) {
+        history.maskItem(item, label: labelInput)
+        history.editingLabelItem = nil
+        isSearchFocused = true
     }
 
     // MARK: - Header Bar
@@ -185,6 +305,12 @@ struct ClipsView: View {
                                     onToggleFavorite: {
                                         history.toggleFavorite(item)
                                     },
+                                    onMask: {
+                                        history.editingLabelItem = item
+                                    },
+                                    onUnmask: {
+                                        history.unmaskItem(item)
+                                    },
                                     onDelete: {
                                         history.delete(item)
                                     }
@@ -274,6 +400,8 @@ struct ClipRowView: View {
     let isSelected: Bool
     let onSelect: () -> Void
     let onToggleFavorite: () -> Void
+    let onMask: () -> Void
+    let onUnmask: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
@@ -291,13 +419,60 @@ struct ClipRowView: View {
 
             // Main Content
             VStack(alignment: .leading, spacing: 3) {
-                Text(item.preview)
-                    .font(.system(size: 13))
-                    .lineLimit(2)
-                    .foregroundStyle(isSelected ? Palette.onAccent : .primary)
-                    .textSelection(.disabled)
+                HStack(spacing: 6) {
+                    if let label = item.customLabel, !label.isEmpty {
+                        Button(action: onMask) {
+                            HStack(spacing: 3) {
+                                Image(systemName: "tag.fill")
+                                    .font(.system(size: 8))
+                                Text(label)
+                                    .font(.system(size: 10, weight: .semibold))
+                            }
+                            .foregroundStyle(isSelected ? Palette.onAccent : Palette.accent)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(isSelected ? Color.white.opacity(0.2) : Palette.accent.opacity(0.12))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .help(L10n.tr(.editLabel))
+                    }
+
+                    if item.isMasked {
+                        Button(action: onUnmask) {
+                            HStack(spacing: 4) {
+                                Text("******")
+                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                Image(systemName: "eye")
+                                    .font(.system(size: 10))
+                                    .opacity(0.7)
+                            }
+                            .foregroundStyle(isSelected ? Palette.onAccent : .primary)
+                        }
+                        .buttonStyle(.plain)
+                        .help(L10n.tr(.revealContent))
+                    } else {
+                        Text(item.preview)
+                            .font(.system(size: 13))
+                            .lineLimit(2)
+                            .foregroundStyle(isSelected ? Palette.onAccent : .primary)
+                            .textSelection(.disabled)
+                    }
+                }
 
                 HStack(spacing: 6) {
+                    if item.isMasked {
+                        HStack(spacing: 3) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 8))
+                            Text(L10n.tr(.maskedTag))
+                                .font(.system(size: 9, weight: .medium))
+                        }
+                        .foregroundStyle(isSelected ? Palette.onAccent.opacity(0.8) : .secondary)
+                    }
+
                     if let app = item.sourceAppName {
                         Text(app)
                             .font(.system(size: 10, weight: .medium))
@@ -313,16 +488,35 @@ struct ClipRowView: View {
 
             Spacer(minLength: 8)
 
-            // Numerical Badge (1..9)
-            if index < 9 {
-                Text("\(index + 1)")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(isSelected ? Palette.onAccent : .secondary)
-                    .frame(width: 20, height: 20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .fill(isSelected ? Color.white.opacity(0.2) : Color.primary.opacity(0.08))
-                    )
+            // Trailing actions: Eye button ("fechar olho" / "ver") + Numerical Badge
+            HStack(spacing: 6) {
+                Button {
+                    if item.isMasked {
+                        onUnmask()
+                    } else {
+                        onMask()
+                    }
+                } label: {
+                    Image(systemName: item.isMasked ? "eye" : "eye.slash")
+                        .font(.system(size: 11))
+                        .foregroundStyle(item.isMasked ? (isSelected ? Palette.onAccent : Palette.accent) : (isSelected ? Palette.onAccent.opacity(0.8) : Color.secondary.opacity(0.6)))
+                        .frame(width: 20, height: 20)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(item.isMasked ? L10n.tr(.revealContent) : L10n.tr(.hideContent))
+
+                // Numerical Badge (1..9)
+                if index < 9 {
+                    Text("\(index + 1)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(isSelected ? Palette.onAccent : .secondary)
+                        .frame(width: 20, height: 20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                .fill(isSelected ? Color.white.opacity(0.2) : Color.primary.opacity(0.08))
+                        )
+                }
             }
         }
         .padding(.horizontal, 10)
@@ -334,6 +528,32 @@ struct ClipRowView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             onSelect()
+        }
+        .contextMenu {
+            if item.isMasked {
+                Button(action: onUnmask) {
+                    Label(L10n.tr(.revealContent), systemImage: "eye")
+                }
+                Button(action: onMask) {
+                    Label(L10n.tr(.editLabel), systemImage: "tag")
+                }
+            } else {
+                Button(action: onMask) {
+                    Label(L10n.tr(.hideContent), systemImage: "eye.slash")
+                }
+            }
+
+            Divider()
+
+            Button(action: onToggleFavorite) {
+                Label(item.isFavorite ? L10n.tr(.removeFromFavorites) : L10n.tr(.addToFavorites), systemImage: item.isFavorite ? "star.slash" : "star")
+            }
+
+            Divider()
+
+            Button(role: .destructive, action: onDelete) {
+                Label(L10n.tr(.deleteClip), systemImage: "trash")
+            }
         }
     }
 
