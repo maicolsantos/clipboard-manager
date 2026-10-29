@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Clips",
+    defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     targets: [
         // Rules and data logic with no SwiftUI, so tests run without the app.

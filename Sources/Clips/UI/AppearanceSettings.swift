@@ -1,4 +1,5 @@
 import SwiftUI
+import ClipsKit
 
 /// Settings > Appearance: the accent color. Light and dark mode follow the Mac.
 struct AppearanceSettings: View {
@@ -8,7 +9,7 @@ struct AppearanceSettings: View {
         Section {
             AccentPreview()
                 .padding(.vertical, Space.xs)
-            LabeledContent("Accent color") {
+            LabeledContent(L10n.tr(.accentColor)) {
                 VStack(alignment: .trailing, spacing: Space.xs) {
                     HStack(spacing: Space.sm) {
                         ForEach(Theme.all) { theme in

@@ -5,6 +5,7 @@ import ClipsKit
 struct ClipsView: View {
     @State private var history = ClipboardHistory.shared
     @FocusState private var isSearchFocused: Bool
+    @AppStorage("appLanguage") private var appLanguage: String = "system"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -71,11 +72,11 @@ struct ClipsView: View {
         HStack(spacing: 12) {
             // Filter Pills
             HStack(spacing: 4) {
-                filterButton(title: "All", hint: "⌘<", isSelected: !history.filterFavoritesOnly) {
+                filterButton(title: L10n.tr(.all), hint: "⌘<", isSelected: !history.filterFavoritesOnly) {
                     history.filterFavoritesOnly = false
                     history.selectFirstItem()
                 }
-                filterButton(title: "Favorites", hint: "⌘1", systemImage: "star.fill", isSelected: history.filterFavoritesOnly) {
+                filterButton(title: L10n.tr(.favorites), hint: "⌘1", systemImage: "star.fill", isSelected: history.filterFavoritesOnly) {
                     history.filterFavoritesOnly = true
                     history.selectFirstItem()
                 }
@@ -89,7 +90,7 @@ struct ClipsView: View {
                     .foregroundStyle(.secondary)
                     .font(.system(size: 13, weight: .medium))
 
-                TextField("Search clips or apps...", text: $history.searchText)
+                TextField(L10n.tr(.searchPlaceholder), text: $history.searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
                     .focused($isSearchFocused)
@@ -160,10 +161,10 @@ struct ClipsView: View {
                     Image(systemName: history.filterFavoritesOnly ? "star.slash" : "clipboard")
                         .font(.system(size: 36))
                         .foregroundStyle(.secondary.opacity(0.6))
-                    Text(history.filterFavoritesOnly ? "No favorite clips yet" : "No clips found")
+                    Text(history.filterFavoritesOnly ? L10n.tr(.noFavoritesYet) : L10n.tr(.noClipsFound))
                         .font(.headline)
                         .foregroundStyle(.secondary)
-                    Text(history.filterFavoritesOnly ? "Star any clip to keep it handy here." : "Copy text, URLs, or images and they will appear here.")
+                    Text(history.filterFavoritesOnly ? L10n.tr(.starHint) : L10n.tr(.copyHint))
                         .font(.subheadline)
                         .foregroundStyle(.tertiary)
                     Spacer()
@@ -208,11 +209,11 @@ struct ClipsView: View {
 
     private var footerBar: some View {
         HStack(spacing: 14) {
-            shortcutHint(key: "1..9", desc: "Quick paste")
-            shortcutHint(key: "↩", desc: "Paste")
-            shortcutHint(key: "Esc", desc: "Close")
-            shortcutHint(key: "⌘1", desc: "Favorites")
-            shortcutHint(key: "⌘<", desc: "All")
+            shortcutHint(key: "1..9", desc: L10n.tr(.quickPaste))
+            shortcutHint(key: "↩", desc: L10n.tr(.paste))
+            shortcutHint(key: "Esc", desc: L10n.tr(.close))
+            shortcutHint(key: "⌘1", desc: L10n.tr(.favorites))
+            shortcutHint(key: "⌘<", desc: L10n.tr(.all))
 
             Spacer()
 
@@ -225,7 +226,7 @@ struct ClipsView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .help("Delete clip")
+                .help(L10n.tr(.deleteClip))
             }
 
             // Accessibility Status
@@ -236,13 +237,13 @@ struct ClipsView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundStyle(.orange)
-                        Text("Enable Auto-Paste")
+                        Text(L10n.tr(.enableAutoPaste))
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.orange)
                     }
                 }
                 .buttonStyle(.plain)
-                .help("Accessibility permission required to auto-paste into active apps")
+                .help(L10n.tr(.accessibilityHelp))
             }
         }
         .padding(.horizontal, 16)

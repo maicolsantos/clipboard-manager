@@ -13,20 +13,21 @@ struct ClipsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var model = AppModel(container: Store.makeContainer())
     @State private var history = ClipboardHistory.shared
+    @AppStorage("appLanguage") private var appLanguage: String = "system"
 
     var body: some Scene {
         MenuBarExtra("Clips", systemImage: "clipboard") {
-            Button("Open Clips (⌘⇧V)") {
+            Button(L10n.tr(.openClips)) {
                 FloatingPanelController.shared.toggle()
             }
             .keyboardShortcut("v", modifiers: [.command, .shift])
 
-            Button("All Clips (⌘<)") {
+            Button(L10n.tr(.allClipsMenu)) {
                 history.filterFavoritesOnly = false
                 FloatingPanelController.shared.show()
             }
 
-            Button("Favorites (⌘1)") {
+            Button(L10n.tr(.favoritesMenu)) {
                 history.filterFavoritesOnly = true
                 FloatingPanelController.shared.show()
             }
@@ -34,13 +35,13 @@ struct ClipsApp: App {
 
             Divider()
 
-            Button("Clear Non-Favorites") {
+            Button(L10n.tr(.clearNonFavorites)) {
                 history.clear()
             }
 
             Divider()
 
-            Button("Settings...") {
+            Button(L10n.tr(.settings)) {
                 NSApp.activate(ignoringOtherApps: true)
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
             }
@@ -48,7 +49,7 @@ struct ClipsApp: App {
 
             Divider()
 
-            Button("Quit Clips") {
+            Button(L10n.tr(.quit)) {
                 NSApp.terminate(nil)
             }
             .keyboardShortcut("q")

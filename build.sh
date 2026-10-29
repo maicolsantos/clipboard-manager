@@ -47,6 +47,12 @@ if [[ -d "$here/Icon/AppIcon.icon" ]]; then
   [[ -f "$car" ]] && cp -X "$car" "$app/Contents/Resources/"
   [[ -f "$here/Resources/AppIcon.icns" ]] && cp -X "$here/Resources/AppIcon.icns" "$app/Contents/Resources/"
 fi
+
+# Copy localization resources (.lproj)
+for lproj in "$here/Resources/"*.lproj; do
+  [[ -d "$lproj" ]] && cp -R "$lproj" "$app/Contents/Resources/"
+done
+
 xattr -cr "$app"
 codesign --force --sign "$identity" "$app" 2>&1 | grep -v "replacing existing signature" || true
 echo "installed $app (signed: ${identity})"

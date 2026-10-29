@@ -1,10 +1,12 @@
 import SwiftUI
+import ClipsKit
 
 /// The Settings window (Command-Comma). One tab per topic, at most about
 /// six. Each tab is a grouped Form that sizes to its content, so the
 /// window grows to fit and shows no scroll bar it does not need.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
+    @AppStorage("appLanguage") private var appLanguage: String = "system"
 
     var body: some View {
         @Bindable var model = model
@@ -41,8 +43,8 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .general: "General"
-        case .appearance: "Appearance"
+        case .general: L10n.tr(.generalTab)
+        case .appearance: L10n.tr(.appearanceTab)
         }
     }
 
@@ -55,26 +57,38 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 }
 
 struct GeneralSettings: View {
+    @AppStorage("appLanguage") private var appLanguage: String = "system"
     @AppStorage("historyLimit") private var historyLimit = 100
     @AppStorage("confirmDelete") private var confirmDelete = true
 
     var body: some View {
-        Section("History") {
-            Picker("History limit", selection: $historyLimit) {
-                Text("25 items").tag(25)
-                Text("50 items").tag(50)
-                Text("100 items (default)").tag(100)
-                Text("200 items").tag(200)
-                Text("500 items").tag(500)
-                Text("1000 items").tag(1000)
+        Section(L10n.tr(.language)) {
+            Picker(L10n.tr(.language), selection: $appLanguage) {
+                ForEach(AppLanguage.allCases) { lang in
+                    Text(lang.displayName).tag(lang.rawValue)
+                }
+            }
+        }
+
+        Section(L10n.tr(.history)) {
+            Picker(L10n.tr(.historyLimit), selection: $historyLimit) {
+                Text(L10n.tr(.itemsCount(25))).tag(25)
+                Text(L10n.tr(.itemsCount(50))).tag(50)
+                Text(L10n.tr(.defaultOption(100))).tag(100)
+                Text(L10n.tr(.itemsCount(200))).tag(200)
+                Text(L10n.tr(.itemsCount(500))).tag(500)
+                Text(L10n.tr(.itemsCount(1000))).tag(1000)
             }
             .onChange(of: historyLimit) { _, _ in
                 ClipboardHistory.shared.enforceLimit()
             }
+            Text(L10n.tr(.historyLimitDescription))
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
 
-        Section("Items") {
-            Toggle("Ask before deleting items", isOn: $confirmDelete)
+        Section(L10n.tr(.items)) {
+            Toggle(L10n.tr(.askBeforeDeleting), isOn: $confirmDelete)
         }
     }
 }
