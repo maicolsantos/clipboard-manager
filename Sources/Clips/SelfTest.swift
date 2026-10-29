@@ -1,5 +1,6 @@
 import AppKit
 import SwiftData
+import SwiftUI
 import ClipsKit
 
 /// Self-test for agents: runs the app's real functions on a test store,
@@ -9,12 +10,17 @@ import ClipsKit
 @MainActor
 enum SelfTest {
     static var requested: Bool { CommandLine.arguments.contains("--selftest") }
+    static var previewRequested: Bool { CommandLine.arguments.contains("--render-preview") }
     /// Read by AppDelegate.applicationWillTerminate.
     static var exitCode: Int32 = 0
     private static var failures = 0
     private static var count = 0
 
     static func runIfRequested(model: AppModel) {
+        if previewRequested {
+            renderPreview()
+            return
+        }
         guard requested else { return }
         setvbuf(stdout, nil, _IOLBF, 0)
         guard Store.isOverridden else {
@@ -132,6 +138,61 @@ enum SelfTest {
         count += 1
         if !ok { failures += 1 }
         print(ok ? "PASS \(name)" : "FAIL \(name)\(detail.isEmpty ? "" : ": \(detail)")")
+    }
+
+    static func renderPreview() {
+        let history = ClipboardHistory.shared
+        history.items = [
+            ClipItem(
+                kind: .text,
+                textContent: "sk-proj-78a9c3b889a741f238b901",
+                isFavorite: true,
+                sourceAppName: "Terminal",
+                isMasked: true,
+                customLabel: "OpenAI API Key"
+            ),
+            ClipItem(
+                kind: .url,
+                textContent: "https://github.com/maicolsantos/clipboard-manager",
+                isFavorite: true,
+                sourceAppName: "Safari"
+            ),
+            ClipItem(
+                kind: .text,
+                textContent: "func copyToPasteboard(_ item: ClipItem) { ... }",
+                isFavorite: false,
+                sourceAppName: "Xcode"
+            ),
+            ClipItem(
+                kind: .text,
+                textContent: "npm install -g @anthropic-ai/claude-code",
+                isFavorite: false,
+                sourceAppName: "Terminal"
+            ),
+            ClipItem(
+                kind: .text,
+                textContent: "SELECT * FROM users WHERE active = true ORDER BY created_at DESC;",
+                isFavorite: false,
+                sourceAppName: "DataGrip"
+            )
+        ]
+        history.selectFirstItem()
+
+        let view = NSHostingView(rootView: ClipsView().themed())
+        view.frame = NSRect(x: 0, y: 0, width: 700, height: 440)
+        view.layoutSubtreeIfNeeded()
+
+        if let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
+            view.cacheDisplay(in: view.bounds, to: rep)
+            if let data = rep.representation(using: NSBitmapImageRep.FileType.png, properties: [:]) {
+                let path1 = "/Users/maicolsantos/Documents/MAICOL/bama-clipboard/Clips/docs/assets/preview.png"
+                let path2 = "/Users/maicolsantos/Documents/MAICOL/bama-clipboard/docs/assets/preview.png"
+                try? data.write(to: URL(fileURLWithPath: path1))
+                try? data.write(to: URL(fileURLWithPath: path2))
+                print("PREVIEW RENDERED to \(path1)")
+            }
+        }
+        finish(code: 0)
     }
 
     static func finish(code: Int32) {

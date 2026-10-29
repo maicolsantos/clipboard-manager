@@ -558,6 +558,17 @@ struct ClipRowView: View {
                                 .fill(isSelected ? Color.white.opacity(0.2) : Color.primary.opacity(0.08))
                         )
                 }
+
+                // Quick Delete ("x") Button - right after the number
+                Button(action: onDelete) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(isSelected ? Palette.onAccent.opacity(0.8) : Color.secondary.opacity(0.55))
+                        .frame(width: 20, height: 20)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(L10n.tr(.deleteClip))
             }
         }
         .padding(.horizontal, 10)
