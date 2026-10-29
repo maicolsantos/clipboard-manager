@@ -38,6 +38,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
 }
 
 /// App-wide state that menus, toolbars, and views share.
+@MainActor
 @Observable
 final class AppModel {
     let container: ModelContainer

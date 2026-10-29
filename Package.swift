@@ -1,17 +1,15 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
     name: "Clips",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v15)],
     targets: [
         // Rules and data logic with no SwiftUI, so tests run without the app.
         .target(name: "ClipsKit"),
         .executableTarget(
             name: "Clips",
-            dependencies: ["ClipsKit"],
-            // App code runs on the main thread unless you say otherwise.
-            swiftSettings: [.defaultIsolation(MainActor.self)]
+            dependencies: ["ClipsKit"]
         ),
         .testTarget(name: "ClipsKitTests", dependencies: ["ClipsKit"]),
     ]

@@ -16,7 +16,6 @@ enum SelfTest {
 
     static func runIfRequested(model: AppModel) {
         guard requested else { return }
-        // Print each line at once, so a crash keeps the lines before it.
         setvbuf(stdout, nil, _IOLBF, 0)
         guard Store.isOverridden else {
             print("SELFTEST refused: set APP_STORE to a file in /tmp")
@@ -24,23 +23,50 @@ enum SelfTest {
             return
         }
         Task {
-            try? await Task.sleep(for: .seconds(0.5))
-            let context = model.container.mainContext
-            func items() -> [Item] { (try? context.fetch(FetchDescriptor<Item>())) ?? [] }
+            try? await Task.sleep(for: .seconds(0.3))
 
-            let before = items().count
-            model.addItem()
-            check("New Item adds one item", items().count == before + 1)
-            check("the new item is selected", model.selection != nil)
+            // 1. Test ClipboardHistory core
+            let history = ClipboardHistory.shared
+            let beforeCount = history.items.count
 
-            if let item = items().first(where: { $0.id == model.selection }) {
-                item.isStarred.toggle()
-                check("starring an item marks it starred", item.isStarred)
-                context.delete(item)
-                try? context.save()
-                check("deleting the item removes it", items().count == before)
+            let testItem1 = ClipItem(kind: .text, textContent: "Hello SelfTest 1", sourceAppName: "Xcode")
+            history.add(testItem1)
+            check("Add clip item increases count", history.items.count == beforeCount + 1)
+            check("Latest clip is at the top", history.items.first?.textContent == "Hello SelfTest 1")
+
+            // Test deduplication
+            let duplicateItem = ClipItem(kind: .text, textContent: "Hello SelfTest 1", sourceAppName: "Safari")
+            history.add(duplicateItem)
+            check("Adding duplicate keeps count unchanged", history.items.count == beforeCount + 1)
+            check("Duplicate moves to top", history.items.first?.textContent == "Hello SelfTest 1")
+
+            // Test Starring
+            if let first = history.items.first {
+                history.toggleFavorite(first)
+                check("Starring marks item as favorite", history.items.first?.isFavorite == true)
+
+                // Test Filter favorites
+                history.filterFavoritesOnly = true
+                check("Filtered items contains favorite", history.filteredItems.contains { $0.id == first.id })
+                history.filterFavoritesOnly = false
             }
-            check("titles are cleaned", ItemTitle.clean("  Buy   milk ") == "Buy milk")
+
+            // Test Search
+            history.searchText = "SelfTest"
+            check("Search finds query match", history.filteredItems.contains { $0.textContent == "Hello SelfTest 1" })
+            history.searchText = "NonExistentKeywordXYZ"
+            check("Search filters out non-matches", history.filteredItems.isEmpty)
+            history.searchText = ""
+
+            // Test deletion
+            if let first = history.items.first {
+                history.delete(first)
+                check("Deleting item removes it", history.items.count == beforeCount)
+            }
+
+            // Test sensitive type filter
+            check("ConcealedType is filtered", PasteboardFilter.shouldIgnore(types: ["org.nspasteboard.ConcealedType"]))
+            check("1Password is filtered", PasteboardFilter.shouldIgnore(types: ["com.agilebits.onepassword"]))
 
             print(failures == 0 ? "SELFTEST PASS \(count) checks" : "SELFTEST FAIL \(failures) of \(count) checks")
             finish(code: failures == 0 ? 0 : 1)
@@ -53,8 +79,6 @@ enum SelfTest {
         print(ok ? "PASS \(name)" : "FAIL \(name)\(detail.isEmpty ? "" : ": \(detail)")")
     }
 
-    /// Quits through NSApp.terminate, never exit(), and closes sheets first:
-    /// an open sheet refuses terminate, and the run would wait forever.
     static func finish(code: Int32) {
         exitCode = code
         for window in NSApp.windows { if let sheet = window.attachedSheet { window.endSheet(sheet) } }

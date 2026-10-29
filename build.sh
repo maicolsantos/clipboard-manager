@@ -44,7 +44,8 @@ if [[ -d "$here/Icon/AppIcon.icon" ]]; then
   if [[ ! -f "$car" || -n "$(find "$here/Icon/AppIcon.icon" -newer "$car" | head -1)" ]]; then
     "$here/tools/make_icon.sh"
   fi
-  cp -X "$car" "$here/Resources/AppIcon.icns" "$app/Contents/Resources/"
+  [[ -f "$car" ]] && cp -X "$car" "$app/Contents/Resources/"
+  [[ -f "$here/Resources/AppIcon.icns" ]] && cp -X "$here/Resources/AppIcon.icns" "$app/Contents/Resources/"
 fi
 xattr -cr "$app"
 codesign --force --sign "$identity" "$app" 2>&1 | grep -v "replacing existing signature" || true

@@ -30,6 +30,7 @@ extension View {
 }
 
 /// Frames of every probe on screen, in window points with the origin at the top left.
+@MainActor
 @Observable
 final class GridProbes {
     static let shared = GridProbes()

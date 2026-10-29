@@ -1,39 +1,50 @@
 import AppKit
 import SwiftData
 import SwiftUI
+import ClipsKit
 
-// Clips
+// Clips: Modern macOS clipboard manager
 //   Clips                      the app
 //   APP_STORE=<file> Clips     use another database (tests, experiments)
-//   APP_SNAPSHOT=<dir> Clips   save a PNG of every sidebar page and Settings tab in light and dark mode, then quit
-//   APP_SEED=1 Clips           fill an empty /tmp store with sample items (tools/snap.sh)
-//   Clips --selftest           run the self-test on a /tmp store and quit with 0 or 1 (tools/selftest.sh)
-//   APP_ACCENT=<id> Clips      run with another accent from Theme.all (UI/Theme.swift)
-//   APP_GRID=1 Clips           draw the 8 pt grid and the layout probes over the window
+//   Clips --selftest           run the self-test and quit with 0 or 1 (tools/selftest.sh)
 
 @main
 struct ClipsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var model = AppModel(container: Store.makeContainer())
+    @State private var history = ClipboardHistory.shared
 
     var body: some Scene {
-        Window("Clips", id: "main") {
-            ContentView()
-                .environment(model)
-                .themed()
-                .overlay { if GridOverlay.enabled { GridOverlay() } }
-                .frame(minWidth: 760, minHeight: 480)
-        }
-        .modelContainer(model.container)
-        .defaultSize(width: 1100, height: 720)
-        .windowToolbarStyle(.unified)
-        .commands {
-            SidebarCommands()
-            ToolbarCommands()
-            CommandGroup(replacing: .newItem) {
-                Button("New Item") { model.addItem() }
-                    .keyboardShortcut("n")
+        MenuBarExtra("Clips", systemImage: "clipboard") {
+            Button("Open Clips (⌥⌘C)") {
+                FloatingPanelController.shared.toggle()
             }
+            .keyboardShortcut("c", modifiers: [.option, .command])
+
+            Button("Favorites") {
+                history.filterFavoritesOnly = true
+                FloatingPanelController.shared.show()
+            }
+
+            Divider()
+
+            Button("Clear Non-Favorites") {
+                history.clear()
+            }
+
+            Divider()
+
+            SettingsLink {
+                Text("Settings...")
+            }
+            .keyboardShortcut(",")
+
+            Divider()
+
+            Button("Quit Clips") {
+                NSApp.terminate(nil)
+            }
+            .keyboardShortcut("q")
         }
 
         Settings {
@@ -47,14 +58,28 @@ struct ClipsApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Started from a terminal, the process is not a foreground app yet.
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate()
+        // Run as accessory utility so it doesn't take dock space
+        if !SelfTest.requested {
+            NSApp.setActivationPolicy(.accessory)
+        } else {
+            NSApp.setActivationPolicy(.regular)
+        }
+
+        FloatingPanelController.shared.setup()
+        ClipboardHistory.shared.startMonitoring()
+
+        HotkeyCenter.shared.onTrigger = {
+            FloatingPanelController.shared.toggle()
+        }
+        HotkeyCenter.shared.register()
+
+        // Run self-test if requested
+        let model = AppModel(container: Store.makeContainer())
+        SelfTest.runIfRequested(model: model)
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
-    /// The self-test's result becomes the exit code, after a normal quit.
     func applicationWillTerminate(_ notification: Notification) {
         if SelfTest.requested { exit(SelfTest.exitCode) }
     }
@@ -62,25 +87,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 /// Where the data lives: ~/Library/Application Support/Clips/Clips.store
 enum Store {
-    /// True when APP_STORE points somewhere else (tests, snapshots, seed data).
     static var isOverridden: Bool {
         !(ProcessInfo.processInfo.environment["APP_STORE"] ?? "").isEmpty
     }
 
     static var url: URL {
-        if let path = ProcessInfo.processInfo.environment["APP_STORE"], !path.isEmpty {
-            return URL(fileURLWithPath: path)
+        if let custom = ProcessInfo.processInfo.environment["APP_STORE"], !custom.isEmpty {
+            return URL(fileURLWithPath: custom)
         }
-        let dir = URL.applicationSupportDirectory.appending(path: "Clips", directoryHint: .isDirectory)
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Clips")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appending(path: "Clips.store")
+        return dir.appendingPathComponent("Clips.store")
     }
 
     static func makeContainer() -> ModelContainer {
+        let schema = Schema([Item.self])
+        let config = ModelConfiguration(schema: schema, url: url)
         do {
-            return try ModelContainer(for: Item.self, configurations: ModelConfiguration(url: url))
+            return try ModelContainer(for: schema, configurations: [config])
         } catch {
-            fatalError("Could not open the database at \(url.path): \(error)")
+            print("Failed to load store: \(error)")
+            let memory = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            return (try? ModelContainer(for: schema, configurations: [memory]))!
         }
     }
 }

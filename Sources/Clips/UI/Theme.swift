@@ -47,6 +47,7 @@ struct Theme: Identifiable, Hashable {
 
 /// The chosen accent, saved in UserDefaults. Views that read `theme` redraw
 /// when it changes.
+@MainActor
 @Observable
 final class ThemeStore {
     static let shared = ThemeStore()
@@ -92,6 +93,7 @@ final class ThemeStore {
 }
 
 /// Accent tokens for views. Never hard-code an accent hex in a view.
+@MainActor
 enum Palette {
     static var accent: Color { ThemeStore.shared.theme.accent }
     static var accentText: Color { ThemeStore.shared.theme.accentText }
