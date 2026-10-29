@@ -2,6 +2,10 @@
 
 A lightweight, blazing-fast, native macOS clipboard manager built with **SwiftUI** and **AppKit**. Designed to be calm, distraction-free, and keyboard-first. 100% local, private, and offline.
 
+<p align="center">
+  <img src="docs/assets/preview.png" alt="Clips macOS Clipboard Manager Screenshot" width="700">
+</p>
+
 ---
 
 ## ✨ Features
