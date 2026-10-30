@@ -3,7 +3,8 @@
 # Usage: tools/snap.sh            all pages
 #        APP_SNAPSHOT_PAGES=all,settings tools/snap.sh
 set -u
-app=~/Applications/Clips.app/Contents/MacOS/Clips
+app=/Applications/Clips.app/Contents/MacOS/Clips
+[[ -x "$app" ]] || app=~/Applications/Clips.app/Contents/MacOS/Clips
 store=/tmp/Clips-test.store
 shots=/tmp/Clips-shots
 # A crashed run leaves saved window state, and the next launch would wait on a "reopen windows?" alert.

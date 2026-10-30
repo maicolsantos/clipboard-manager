@@ -75,14 +75,14 @@ A lightweight, blazing-fast, native macOS clipboard manager built with **SwiftUI
 
 Clips has no external third-party dependencies. It is built as a standalone Swift Package and App bundle.
 
-### 1. Build and install to `~/Applications/Clips.app`
+### 1. Build and install to `/Applications/Clips.app`
 
 ```bash
 # Clone the repository
 git clone https://github.com/maicolsantos/clipboard-manager.git
 cd clipboard-manager
 
-# Build, sign ad-hoc, and install into ~/Applications/Clips.app
+# Build, sign, and install into /Applications/Clips.app
 ./build.sh
 
 # Or build and launch immediately:

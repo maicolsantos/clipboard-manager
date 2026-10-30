@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds Clips and installs it to ~/Applications/Clips.app.
+# Builds Clips and installs it to /Applications/Clips.app.
 # Build products live in ~/Library/Developer/Clips, outside the repo
 # (and outside Dropbox or iCloud, which would try to sync them).
 #
@@ -32,9 +32,14 @@ if [[ -n "$stale" ]]; then
   exit 1
 fi
 
-app="$HOME/Applications/$name.app"
-mkdir -p "$HOME/Applications"
+install_dir="${INSTALL_DIR:-/Applications}"
+app="$install_dir/$name.app"
+mkdir -p "$install_dir"
 rm -rf "$app"
+# Clean up legacy user-folder install if present to prevent duplicate LaunchServices entries
+if [[ "$install_dir" == "/Applications" && -d "$HOME/Applications/$name.app" ]]; then
+  rm -rf "$HOME/Applications/$name.app"
+fi
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin" "$app/Contents/MacOS/$name"
 sed -e "s/__BUILD__/$(date +%Y%m%d%H%M)/" "$here/Info.plist.in" > "$app/Contents/Info.plist"

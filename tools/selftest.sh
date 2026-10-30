@@ -4,4 +4,6 @@ set -u
 rm -rf ~/Library/Saved\ Application\ State/com.maicolsantos.clips.savedState
 store=/tmp/Clips-self.store
 rm -f $store $store-shm $store-wal
-APP_STORE=$store ~/Applications/Clips.app/Contents/MacOS/Clips --selftest
+app="/Applications/Clips.app/Contents/MacOS/Clips"
+[[ -x "$app" ]] || app="$HOME/Applications/Clips.app/Contents/MacOS/Clips"
+APP_STORE=$store "$app" --selftest
