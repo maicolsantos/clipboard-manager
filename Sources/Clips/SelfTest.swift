@@ -140,6 +140,15 @@ enum SelfTest {
             history.delete(fav1)
             history.delete(fav2)
 
+            // Test Launch at login default
+            check("Default launch at login is true", LaunchAtLoginManager.shared.isEnabled == true)
+
+            // Test Safe paste input detection
+            check("Terminal app identified", SyntheticPaste.isTerminalApp(bundleID: "com.apple.Terminal"))
+            check("Finder is not terminal app", !SyntheticPaste.isTerminalApp(bundleID: "com.apple.finder"))
+            check("No input destination for invalid pid", !SyntheticPaste.hasActiveTextInput(pid: 0, bundleIdentifier: nil))
+            check("No input destination for nil pid Finder", !SyntheticPaste.hasActiveTextInput(pid: nil, bundleIdentifier: "com.apple.finder"))
+
             print(failures == 0 ? "SELFTEST PASS \(count) checks" : "SELFTEST FAIL \(failures) of \(count) checks")
             finish(code: failures == 0 ? 0 : 1)
         }

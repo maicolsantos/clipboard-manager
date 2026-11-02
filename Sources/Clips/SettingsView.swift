@@ -60,8 +60,16 @@ struct GeneralSettings: View {
     @AppStorage("appLanguage") private var appLanguage: String = "system"
     @AppStorage("historyLimit") private var historyLimit = 100
     @AppStorage("confirmDelete") private var confirmDelete = true
+    @State private var launchAtLogin = LaunchAtLoginManager.shared
 
     var body: some View {
+        Section(L10n.tr(.startup)) {
+            Toggle(L10n.tr(.launchAtLogin), isOn: Binding(
+                get: { launchAtLogin.isEnabled },
+                set: { launchAtLogin.isEnabled = $0 }
+            ))
+        }
+
         Section(L10n.tr(.language)) {
             Picker(L10n.tr(.language), selection: $appLanguage) {
                 ForEach(AppLanguage.allCases) { lang in

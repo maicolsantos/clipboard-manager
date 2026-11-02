@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import SwiftUI
+import ClipsKit
 
 final class ClipboardFloatingPanel: NSPanel {
     override var canBecomeKey: Bool { true }
@@ -114,6 +115,7 @@ final class FloatingPanelController: NSObject {
 
     private(set) var panel: ClipboardFloatingPanel?
     private(set) var previousApp: NSRunningApplication?
+    private(set) var previousAppHadActiveInput: Bool = false
     private var globalKeyMonitor: Any?
     private var globalMouseMonitor: Any?
 
@@ -169,10 +171,20 @@ final class FloatingPanelController: NSObject {
     }
 
     func show() {
-        // Record frontmost application before Clips activates
+        // Record frontmost application before Clips activates.
+        // For Finder specifically, also check whether a text field is active so we
+        // can avoid firing Cmd+V into a folder window (which would create a .textClipping).
+        // For all other apps we skip the AX check — it would fail anyway once the
+        // panel steals focus, and non-Finder apps handle Cmd+V safely on their own.
         if let frontApp = NSWorkspace.shared.frontmostApplication,
            frontApp.bundleIdentifier != Bundle.main.bundleIdentifier {
             self.previousApp = frontApp
+            let isFinder = frontApp.bundleIdentifier?.lowercased() == "com.apple.finder"
+            self.previousAppHadActiveInput = isFinder
+                ? SyntheticPaste.hasActiveTextInput(
+                    pid: frontApp.processIdentifier,
+                    bundleIdentifier: frontApp.bundleIdentifier)
+                : true  // Non-Finder apps always accept paste
         }
 
         guard let p = panel else {

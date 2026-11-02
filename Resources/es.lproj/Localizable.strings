@@ -18,6 +18,8 @@
 "Settings..." = "Ajustes...";
 "Quit Clips" = "Salir de Clips";
 "General" = "General";
+"Startup" = "Inicio";
+"Launch at login" = "Abrir al iniciar sesión";
 "Appearance" = "Aspecto";
 "Language" = "Idioma";
 "History" = "Historial";

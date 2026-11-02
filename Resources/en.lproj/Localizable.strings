@@ -18,6 +18,8 @@
 "Settings..." = "Settings...";
 "Quit Clips" = "Quit Clips";
 "General" = "General";
+"Startup" = "Startup";
+"Launch at login" = "Launch at login";
 "Appearance" = "Appearance";
 "Language" = "Language";
 "History" = "History";

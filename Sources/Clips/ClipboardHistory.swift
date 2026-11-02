@@ -337,8 +337,25 @@ final class ClipboardHistory {
     }
 
     func pasteItem(_ item: ClipItem) {
+        guard SyntheticPaste.isAccessibilityGranted else {
+            SyntheticPaste.requestAccessibility()
+            return
+        }
+
+        let controller = FloatingPanelController.shared
+        let targetApp = controller.previousApp
+
+        // Only block paste for Finder when no active text input.
+        // Pasting into Finder without an active rename/search field creates
+        // an unwanted .textClipping document on disk.
+        if let targetApp, targetApp.bundleIdentifier?.lowercased() == "com.apple.finder" {
+            guard controller.previousAppHadActiveInput else {
+                // Finder is focused but no text field is active — ignore silently.
+                return
+            }
+        }
+
         copyToPasteboard(item)
-        let targetApp = FloatingPanelController.shared.previousApp
         FloatingPanelController.shared.hide()
 
         // Reactivate target app so simulated paste arrives at the right destination
@@ -350,11 +367,8 @@ final class ClipboardHistory {
 
         // Give previous app time to receive focus before sending simulated Command-V
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
-            if SyntheticPaste.isAccessibilityGranted {
-                SyntheticPaste.postPasteCommand()
-            } else {
-                SyntheticPaste.requestAccessibility()
-            }
+            guard SyntheticPaste.isAccessibilityGranted else { return }
+            SyntheticPaste.postPasteCommand()
         }
     }
 

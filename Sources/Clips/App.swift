@@ -59,6 +59,11 @@ struct MenuBarMenu: View {
 
         Divider()
 
+        Toggle(L10n.tr(.launchAtLogin), isOn: Binding(
+            get: { LaunchAtLoginManager.shared.isEnabled },
+            set: { LaunchAtLoginManager.shared.isEnabled = $0 }
+        ))
+
         Button(L10n.tr(.settings)) {
             NSApp.activate(ignoringOtherApps: true)
             openSettings()
@@ -85,6 +90,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         FloatingPanelController.shared.setup()
         ClipboardHistory.shared.startMonitoring()
+
+        if !SelfTest.requested {
+            LaunchAtLoginManager.shared.configureOnLaunch()
+        }
 
         HotkeyCenter.shared.onTrigger = {
             FloatingPanelController.shared.toggle()

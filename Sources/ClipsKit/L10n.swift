@@ -115,6 +115,8 @@ public enum L10n {
         case removeLabel
         case save
         case dragToReorder
+        case startup
+        case launchAtLogin
 
         var en: String {
             switch self {
@@ -161,6 +163,8 @@ public enum L10n {
             case .removeLabel: return "Remove Label"
             case .save: return "Save"
             case .dragToReorder: return "Drag to reorder"
+            case .startup: return "Startup"
+            case .launchAtLogin: return "Launch at login"
             }
         }
 
@@ -209,6 +213,8 @@ public enum L10n {
             case .removeLabel: return "Remover Rótulo"
             case .save: return "Salvar"
             case .dragToReorder: return "Arrastar para reordenar"
+            case .startup: return "Inicialização"
+            case .launchAtLogin: return "Iniciar no login"
             }
         }
 
@@ -257,6 +263,8 @@ public enum L10n {
             case .removeLabel: return "Remover Etiqueta"
             case .save: return "Guardar"
             case .dragToReorder: return "Arrastar para reordenar"
+            case .startup: return "Arranque"
+            case .launchAtLogin: return "Iniciar ao iniciar a sessão"
             }
         }
 
@@ -305,6 +313,8 @@ public enum L10n {
             case .removeLabel: return "Eliminar Etiqueta"
             case .save: return "Guardar"
             case .dragToReorder: return "Arrastrar para reordenar"
+            case .startup: return "Inicio"
+            case .launchAtLogin: return "Abrir al iniciar sesión"
             }
         }
     }

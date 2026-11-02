@@ -29,11 +29,18 @@ struct L10nTests {
             #expect(!L10n.tr(.removeLabel, lang: lang).isEmpty)
             #expect(!L10n.tr(.save, lang: lang).isEmpty)
             #expect(!L10n.tr(.dragToReorder, lang: lang).isEmpty)
+            #expect(!L10n.tr(.startup, lang: lang).isEmpty)
+            #expect(!L10n.tr(.launchAtLogin, lang: lang).isEmpty)
         }
     }
 
     @Test("Specific regional differences between pt-BR and pt-PT")
     func testPortugueseRegionalDifferences() {
+        #expect(L10n.tr(.startup, lang: .ptBR) == "Inicialização")
+        #expect(L10n.tr(.startup, lang: .ptPT) == "Arranque")
+        #expect(L10n.tr(.launchAtLogin, lang: .ptBR) == "Iniciar no login")
+        #expect(L10n.tr(.launchAtLogin, lang: .ptPT) == "Iniciar ao iniciar a sessão")
+
         #expect(L10n.tr(.settings, lang: .ptBR) == "Configurações...")
         #expect(L10n.tr(.settings, lang: .ptPT) == "Definições...")
 
@@ -49,6 +56,8 @@ struct L10nTests {
 
     @Test("Spanish translations")
     func testSpanishTranslations() {
+        #expect(L10n.tr(.startup, lang: .es) == "Inicio")
+        #expect(L10n.tr(.launchAtLogin, lang: .es) == "Abrir al iniciar sesión")
         #expect(L10n.tr(.settings, lang: .es) == "Ajustes...")
         #expect(L10n.tr(.paste, lang: .es) == "Pegar")
         #expect(L10n.tr(.quickPaste, lang: .es) == "Pegado rápido")
