@@ -31,6 +31,7 @@ struct ClipsApp: App {
 
 struct MenuBarMenu: View {
     @Bindable var model: AppModel
+    @State private var launchAtLogin = LaunchAtLoginManager.shared
     @State private var history = ClipboardHistory.shared
     @Environment(\.openSettings) private var openSettings
 
@@ -59,10 +60,7 @@ struct MenuBarMenu: View {
 
         Divider()
 
-        Toggle(L10n.tr(.launchAtLogin), isOn: Binding(
-            get: { LaunchAtLoginManager.shared.isEnabled },
-            set: { LaunchAtLoginManager.shared.isEnabled = $0 }
-        ))
+        Toggle(L10n.tr(.launchAtLogin), isOn: $launchAtLogin.isEnabled)
 
         Button(L10n.tr(.settings)) {
             NSApp.activate(ignoringOtherApps: true)

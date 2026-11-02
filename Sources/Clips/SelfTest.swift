@@ -155,8 +155,13 @@ enum SelfTest {
             history.delete(fav1)
             history.delete(fav2)
 
-            // Test Launch at login default
-            check("Default launch at login is true", LaunchAtLoginManager.shared.isEnabled == true)
+            // Test Launch at login default and toggle
+            let initialLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
+            LaunchAtLoginManager.shared.isEnabled = false
+            check("Launch at login toggled to false", LaunchAtLoginManager.shared.isEnabled == false)
+            LaunchAtLoginManager.shared.isEnabled = true
+            check("Launch at login toggled back to true", LaunchAtLoginManager.shared.isEnabled == true)
+            LaunchAtLoginManager.shared.isEnabled = initialLaunchAtLogin
 
             // Test Safe paste input detection
             check("Terminal app identified", SyntheticPaste.isTerminalApp(bundleID: "com.apple.Terminal"))

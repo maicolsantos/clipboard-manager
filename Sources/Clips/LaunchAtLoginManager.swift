@@ -10,45 +10,49 @@ public final class LaunchAtLoginManager {
     public static let userDefaultsKey = "launchAtLogin"
 
     public var isEnabled: Bool {
-        get {
-            // Check status of modern SMAppService if registered
-            if SMAppService.mainApp.status == .enabled {
-                return true
-            }
-            if SMAppService.mainApp.status == .requiresApproval {
-                return false
-            }
-            // Use explicit user preference if stored, otherwise default is true
-            if let explicit = UserDefaults.standard.object(forKey: Self.userDefaultsKey) as? Bool {
-                return explicit
-            }
-            return true
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: Self.userDefaultsKey)
-            apply(newValue)
+        didSet {
+            guard oldValue != isEnabled else { return }
+            UserDefaults.standard.set(isEnabled, forKey: Self.userDefaultsKey)
+            apply(isEnabled)
         }
     }
 
-    private init() {}
+    private init() {
+        if let explicit = UserDefaults.standard.object(forKey: Self.userDefaultsKey) as? Bool {
+            self.isEnabled = explicit
+        } else {
+            // Check status of modern SMAppService if registered
+            if SMAppService.mainApp.status == .enabled {
+                self.isEnabled = true
+            } else if SMAppService.mainApp.status == .requiresApproval {
+                self.isEnabled = false
+            } else {
+                self.isEnabled = true
+            }
+        }
+    }
 
     public func configureOnLaunch() {
         UserDefaults.standard.register(defaults: [Self.userDefaultsKey: true])
-        if isEnabled && SMAppService.mainApp.status != .enabled {
-            apply(true)
+        if SMAppService.mainApp.status == .requiresApproval {
+            if isEnabled {
+                isEnabled = false
+            }
+            return
         }
+        apply(isEnabled)
     }
 
     private func apply(_ enable: Bool) {
+        guard !Store.isOverridden else { return }
         do {
             if enable {
-                if SMAppService.mainApp.status != .enabled {
-                    try SMAppService.mainApp.register()
-                }
-            } else {
                 if SMAppService.mainApp.status == .enabled {
-                    try SMAppService.mainApp.unregister()
+                    try? SMAppService.mainApp.unregister()
                 }
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
             }
         } catch {
             // Silently handled in CLI/testing environment where SMAppService bundle registration is unavailable

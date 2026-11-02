@@ -64,10 +64,7 @@ struct GeneralSettings: View {
 
     var body: some View {
         Section(L10n.tr(.startup)) {
-            Toggle(L10n.tr(.launchAtLogin), isOn: Binding(
-                get: { launchAtLogin.isEnabled },
-                set: { launchAtLogin.isEnabled = $0 }
-            ))
+            Toggle(L10n.tr(.launchAtLogin), isOn: $launchAtLogin.isEnabled)
         }
 
         Section(L10n.tr(.language)) {
