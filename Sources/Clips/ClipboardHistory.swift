@@ -13,6 +13,7 @@ final class ClipboardHistory {
     var filterFavoritesOnly: Bool = false
     var selectedItemID: UUID?
     var editingLabelItem: ClipItem?
+    var deletingConfirmationItem: ClipItem?
 
     private var timer: Timer?
     private var lastChangeCount: Int = -1
@@ -227,6 +228,15 @@ final class ClipboardHistory {
         let moved = items.remove(at: fromIndex)
         items.insert(moved, at: toIndex)
         scheduleSave()
+    }
+
+    func requestDelete(_ item: ClipItem) {
+        let confirm = UserDefaults.standard.object(forKey: "confirmDelete") as? Bool ?? true
+        if confirm {
+            deletingConfirmationItem = item
+        } else {
+            delete(item)
+        }
     }
 
     func delete(_ item: ClipItem) {

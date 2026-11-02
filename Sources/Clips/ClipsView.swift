@@ -24,6 +24,10 @@ struct ClipsView: View {
             if let item = history.editingLabelItem {
                 labelModal(for: item)
             }
+
+            if let item = history.deletingConfirmationItem {
+                deleteConfirmationModal(for: item)
+            }
         }
         .frame(width: 700, height: 440)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -40,8 +44,9 @@ struct ClipsView: View {
             }
         }
         .onKeyPress(.escape) {
-            if history.editingLabelItem != nil {
+            if history.editingLabelItem != nil || history.deletingConfirmationItem != nil {
                 history.editingLabelItem = nil
+                history.deletingConfirmationItem = nil
                 isSearchFocused = true
                 return .handled
             }
@@ -49,28 +54,28 @@ struct ClipsView: View {
             return .handled
         }
         .onKeyPress(.return) {
-            if history.editingLabelItem != nil {
+            if history.editingLabelItem != nil || history.deletingConfirmationItem != nil {
                 return .ignored
             }
             history.pasteCurrentSelectedItem()
             return .handled
         }
         .onKeyPress(.upArrow) {
-            if history.editingLabelItem != nil {
+            if history.editingLabelItem != nil || history.deletingConfirmationItem != nil {
                 return .ignored
             }
             history.moveSelection(delta: -1)
             return .handled
         }
         .onKeyPress(.downArrow) {
-            if history.editingLabelItem != nil {
+            if history.editingLabelItem != nil || history.deletingConfirmationItem != nil {
                 return .ignored
             }
             history.moveSelection(delta: 1)
             return .handled
         }
         .onKeyPress(characters: CharacterSet(charactersIn: "123456789")) { press in
-            if history.editingLabelItem != nil {
+            if history.editingLabelItem != nil || history.deletingConfirmationItem != nil {
                 return .ignored
             }
             if history.searchText.isEmpty, let digit = Int(press.characters), digit >= 1 && digit <= 9 {
@@ -220,6 +225,86 @@ struct ClipsView: View {
         isSearchFocused = true
     }
 
+    // MARK: - Delete Confirmation Modal
+
+    private func deleteConfirmationModal(for item: ClipItem) -> some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    history.deletingConfirmationItem = nil
+                    isSearchFocused = true
+                }
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 8) {
+                    Image(systemName: "trash.fill")
+                        .foregroundStyle(.red)
+                        .font(.system(size: 15))
+                    Text(L10n.tr(.confirmDeleteTitle))
+                        .font(.system(size: 14, weight: .bold))
+                    Spacer()
+                    Button {
+                        history.deletingConfirmationItem = nil
+                        isSearchFocused = true
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Text(L10n.tr(.confirmDeleteMessage))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+
+                Text(item.preview)
+                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .lineLimit(2)
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+
+                HStack {
+                    Spacer()
+
+                    Button(L10n.tr(.cancel)) {
+                        history.deletingConfirmationItem = nil
+                        isSearchFocused = true
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+
+                    Button {
+                        history.delete(item)
+                        history.deletingConfirmationItem = nil
+                        isSearchFocused = true
+                    } label: {
+                        Text(L10n.tr(.deleteClip))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(Color.red, in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(18)
+            .frame(width: 380)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.regularMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.35), radius: 20, x: 0, y: 10)
+        }
+    }
+
     // MARK: - Header Bar
 
     private var headerBar: some View {
@@ -353,7 +438,7 @@ struct ClipsView: View {
                                         history.removeLabel(from: item)
                                     },
                                     onDelete: {
-                                        history.delete(item)
+                                        history.requestDelete(item)
                                     }
                                 )
                                 .id(item.id)
@@ -403,7 +488,7 @@ struct ClipsView: View {
 
             if let item = history.currentSelectedItem {
                 Button {
-                    history.delete(item)
+                    history.requestDelete(item)
                 } label: {
                     Image(systemName: "trash")
                         .font(.system(size: 11))

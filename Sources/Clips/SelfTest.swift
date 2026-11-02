@@ -84,6 +84,21 @@ enum SelfTest {
                 check("Deleting item removes it", history.items.count == beforeCount)
             }
 
+            // Test confirmDelete setting and requestDelete
+            let itemForConfirm = ClipItem(kind: .text, textContent: "Item to test delete confirmation")
+            history.add(itemForConfirm)
+            UserDefaults.standard.set(true, forKey: "confirmDelete")
+            history.requestDelete(itemForConfirm)
+            check("Confirm delete sets deletingConfirmationItem when true", history.deletingConfirmationItem?.id == itemForConfirm.id)
+            check("Item not deleted yet while pending confirmation", history.items.contains { $0.id == itemForConfirm.id })
+            history.deletingConfirmationItem = nil
+
+            UserDefaults.standard.set(false, forKey: "confirmDelete")
+            let countBeforeConfirm = history.items.count
+            history.requestDelete(itemForConfirm)
+            check("Item deleted directly when confirmDelete is false", history.items.count == countBeforeConfirm - 1)
+            UserDefaults.standard.removeObject(forKey: "confirmDelete")
+
             // Test history limit
             check("Default history limit is 100", history.historyLimit == 100)
 

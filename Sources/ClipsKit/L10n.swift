@@ -117,6 +117,8 @@ public enum L10n {
         case dragToReorder
         case startup
         case launchAtLogin
+        case confirmDeleteTitle
+        case confirmDeleteMessage
 
         var en: String {
             switch self {
@@ -165,6 +167,8 @@ public enum L10n {
             case .dragToReorder: return "Drag to reorder"
             case .startup: return "Startup"
             case .launchAtLogin: return "Launch at login"
+            case .confirmDeleteTitle: return "Delete clip?"
+            case .confirmDeleteMessage: return "Are you sure you want to delete this clip? This action cannot be undone."
             }
         }
 
@@ -215,6 +219,8 @@ public enum L10n {
             case .dragToReorder: return "Arrastar para reordenar"
             case .startup: return "Inicialização"
             case .launchAtLogin: return "Iniciar no login"
+            case .confirmDeleteTitle: return "Apagar clipe?"
+            case .confirmDeleteMessage: return "Tem certeza de que deseja apagar este clipe? Esta ação não pode ser desfeita."
             }
         }
 
@@ -265,6 +271,8 @@ public enum L10n {
             case .dragToReorder: return "Arrastar para reordenar"
             case .startup: return "Arranque"
             case .launchAtLogin: return "Iniciar ao iniciar a sessão"
+            case .confirmDeleteTitle: return "Eliminar clipe?"
+            case .confirmDeleteMessage: return "Tem a certeza de que deseja eliminar este clipe? Esta ação não pode ser anulada."
             }
         }
 
@@ -315,6 +323,8 @@ public enum L10n {
             case .dragToReorder: return "Arrastrar para reordenar"
             case .startup: return "Inicio"
             case .launchAtLogin: return "Abrir al iniciar sesión"
+            case .confirmDeleteTitle: return "¿Eliminar clip?"
+            case .confirmDeleteMessage: return "¿Seguro que quieres eliminar este clip? Esta acción no se puede deshacer."
             }
         }
     }

@@ -9,6 +9,8 @@
 "Paste" = "Paste";
 "Close" = "Close";
 "Delete clip" = "Delete clip";
+"Delete clip?" = "Delete clip?";
+"Are you sure you want to delete this clip? This action cannot be undone." = "Are you sure you want to delete this clip? This action cannot be undone.";
 "Enable Auto-Paste" = "Enable Auto-Paste";
 "Accessibility permission required to auto-paste into active apps" = "Accessibility permission required to auto-paste into active apps";
 "Open Clips (⌘⇧V)" = "Open Clips (⌘⇧V)";

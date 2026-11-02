@@ -9,6 +9,8 @@
 "Paste" = "Colar";
 "Close" = "Fechar";
 "Delete clip" = "Apagar clipe";
+"Delete clip?" = "Apagar clipe?";
+"Are you sure you want to delete this clip? This action cannot be undone." = "Tem certeza de que deseja apagar este clipe? Esta ação não pode ser desfeita.";
 "Enable Auto-Paste" = "Ativar Colagem Automática";
 "Accessibility permission required to auto-paste into active apps" = "Permissão de acessibilidade necessária para colar automaticamente em aplicativos ativos";
 "Open Clips (⌘⇧V)" = "Abrir Clips (⌘⇧V)";

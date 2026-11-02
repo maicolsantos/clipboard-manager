@@ -31,6 +31,8 @@ struct L10nTests {
             #expect(!L10n.tr(.dragToReorder, lang: lang).isEmpty)
             #expect(!L10n.tr(.startup, lang: lang).isEmpty)
             #expect(!L10n.tr(.launchAtLogin, lang: lang).isEmpty)
+            #expect(!L10n.tr(.confirmDeleteTitle, lang: lang).isEmpty)
+            #expect(!L10n.tr(.confirmDeleteMessage, lang: lang).isEmpty)
         }
     }
 
