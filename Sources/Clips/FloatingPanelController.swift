@@ -31,45 +31,35 @@ final class ClipboardFloatingPanel: NSPanel {
             return false
         }
 
-        // 1. Esc: Close clipboard
-        if event.keyCode == 53 { // kVK_Escape
+        let shortcuts = ShortcutStore.shared
+
+        // 1. Close: Configured shortcut or Escape
+        if shortcuts.close.matches(event: event) || (shortcuts.close.isEmpty && event.keyCode == 53) {
             FloatingPanelController.shared.hide()
+            return true
+        }
+
+        // 2. Switch to Favorites
+        if shortcuts.favorites.matches(event: event) {
+            ClipboardHistory.shared.filterFavoritesOnly = true
+            ClipboardHistory.shared.selectFirstItem()
+            return true
+        }
+
+        // 3. Switch to All
+        if shortcuts.allClips.matches(event: event) {
+            ClipboardHistory.shared.filterFavoritesOnly = false
+            ClipboardHistory.shared.selectFirstItem()
             return true
         }
 
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
 
-        // 2. Cmd + 1: Switch to Favorites
-        if flags == .command {
-            if event.keyCode == UInt16(kVK_ANSI_1) || event.charactersIgnoringModifiers == "1" {
-                ClipboardHistory.shared.filterFavoritesOnly = true
-                ClipboardHistory.shared.selectFirstItem()
-                return true
-            }
-        }
-
-        // 3. Cmd + <: Switch to All
-        // Handles ISO Section key (10) on ABNT2/Portuguese keyboards,
-        // or Shift + Comma on US keyboards (Cmd + Shift + Comma),
-        // or characters containing "<"
-        if flags.contains(.command) {
-            let isAngleBracket = event.characters?.contains("<") == true
-                || event.charactersIgnoringModifiers?.contains("<") == true
-                || event.keyCode == 10 // kVK_ISO_Section on ISO/ABNT2 layouts
-                || (event.keyCode == UInt16(kVK_ANSI_Comma) && flags.contains(.shift))
-
-            if isAngleBracket {
-                ClipboardHistory.shared.filterFavoritesOnly = false
-                ClipboardHistory.shared.selectFirstItem()
-                return true
-            }
-
-            // Cmd + ,: Open Settings
-            if (event.keyCode == UInt16(kVK_ANSI_Comma) && !flags.contains(.shift)) || event.charactersIgnoringModifiers == "," {
-                NSApp.activate(ignoringOtherApps: true)
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                return true
-            }
+        // Cmd + ,: Open Settings
+        if flags.contains(.command) && ((event.keyCode == UInt16(kVK_ANSI_Comma) && !flags.contains(.shift)) || event.charactersIgnoringModifiers == ",") {
+            NSApp.activate(ignoringOtherApps: true)
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            return true
         }
 
         // 4. Up Arrow: Move selection up
@@ -85,7 +75,7 @@ final class ClipboardFloatingPanel: NSPanel {
         }
 
         // 6. Enter / Return: Paste selected item immediately
-        if event.keyCode == 36 || event.keyCode == 76 { // kVK_Return / kVK_ANSI_KeypadEnter
+        if shortcuts.paste.matches(event: event) {
             ClipboardHistory.shared.pasteCurrentSelectedItem()
             return true
         }

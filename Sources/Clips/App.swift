@@ -33,24 +33,26 @@ struct MenuBarMenu: View {
     @Bindable var model: AppModel
     @State private var launchAtLogin = LaunchAtLoginManager.shared
     @State private var history = ClipboardHistory.shared
+    @State private var shortcuts = ShortcutStore.shared
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        Button(L10n.tr(.openClips)) {
+        Button(shortcuts.menuTitle(for: .openClips, base: L10n.tr(.openClipsAction))) {
             FloatingPanelController.shared.toggle()
         }
-        .keyboardShortcut("v", modifiers: [.command, .shift])
+        .optionalKeyboardShortcut(shortcuts.openClips)
 
-        Button(L10n.tr(.allClipsMenu)) {
+        Button(shortcuts.menuTitle(for: .allClips, base: L10n.tr(.allClipsAction))) {
             history.filterFavoritesOnly = false
             FloatingPanelController.shared.show()
         }
+        .optionalKeyboardShortcut(shortcuts.allClips)
 
-        Button(L10n.tr(.favoritesMenu)) {
+        Button(shortcuts.menuTitle(for: .favorites, base: L10n.tr(.favoritesAction))) {
             history.filterFavoritesOnly = true
             FloatingPanelController.shared.show()
         }
-        .keyboardShortcut("1", modifiers: [.command])
+        .optionalKeyboardShortcut(shortcuts.favorites)
 
         Divider()
 
@@ -98,9 +100,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         HotkeyCenter.shared.register()
 
-        // Run self-test if requested
+        // Run self-test or snapshots if requested
         let model = AppModel(container: Store.makeContainer())
         SelfTest.runIfRequested(model: model)
+        Snapshot.runIfRequested(model: model)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }

@@ -169,6 +169,33 @@ enum SelfTest {
             check("No input destination for invalid pid", !SyntheticPaste.hasActiveTextInput(pid: 0, bundleIdentifier: nil))
             check("No input destination for nil pid Finder", !SyntheticPaste.hasActiveTextInput(pid: nil, bundleIdentifier: "com.apple.finder"))
 
+            // Test Keyboard Shortcuts settings and updates
+            let shortcuts = ShortcutStore.shared
+            shortcuts.resetToDefaults()
+            check("Default openClips shortcut is ⌘⇧V", shortcuts.openClips.displayString == "⌘⇧V")
+            check("Default allClips shortcut is ⌘<", shortcuts.allClips.displayString == "⌘<")
+            check("Default favorites shortcut is ⌘1", shortcuts.favorites.displayString == "⌘1")
+            check("Default paste shortcut is ↩", shortcuts.paste.displayString == "↩")
+            check("Default close shortcut is Esc", shortcuts.close.displayString == "Esc")
+
+            // Test updating a shortcut and menu title reflection
+            let newFavoritesCombo = KeyCombo(keyCode: 19, modifierFlags: [.command], keyDisplay: "2")
+            shortcuts.set(newFavoritesCombo, for: .favorites)
+            check("Updated favorites shortcut is ⌘2", shortcuts.favorites.displayString == "⌘2")
+            check("Menu title reflects updated shortcut", shortcuts.menuTitle(for: .favorites, base: "Favorites") == "Favorites (⌘2)")
+
+            // Test conflict displacement
+            let displaced = shortcuts.set(newFavoritesCombo, for: .allClips)
+            check("Assigning same shortcut displaces previous holder", displaced == .favorites)
+            check("Previous holder is now empty", shortcuts.favorites.isEmpty)
+            check("New holder has the shortcut", shortcuts.allClips.displayString == "⌘2")
+
+            // Test restore defaults
+            shortcuts.resetToDefaults()
+            check("Restore defaults resets favorites to ⌘1", shortcuts.favorites.displayString == "⌘1")
+            check("Restore defaults resets allClips to ⌘<", shortcuts.allClips.displayString == "⌘<")
+            check("Restore defaults resets openClips to ⌘⇧V", shortcuts.openClips.displayString == "⌘⇧V")
+
             print(failures == 0 ? "SELFTEST PASS \(count) checks" : "SELFTEST FAIL \(failures) of \(count) checks")
             finish(code: failures == 0 ? 0 : 1)
         }

@@ -311,11 +311,11 @@ struct ClipsView: View {
         HStack(spacing: 12) {
             // Filter Pills
             HStack(spacing: 4) {
-                filterButton(title: L10n.tr(.all), hint: "⌘<", isSelected: !history.filterFavoritesOnly) {
+                filterButton(title: L10n.tr(.all), hint: ShortcutStore.shared.allClips.displayString, isSelected: !history.filterFavoritesOnly) {
                     history.filterFavoritesOnly = false
                     history.selectFirstItem()
                 }
-                filterButton(title: L10n.tr(.favorites), hint: "⌘1", systemImage: "star.fill", isSelected: history.filterFavoritesOnly) {
+                filterButton(title: L10n.tr(.favorites), hint: ShortcutStore.shared.favorites.displayString, systemImage: "star.fill", isSelected: history.filterFavoritesOnly) {
                     history.filterFavoritesOnly = true
                     history.selectFirstItem()
                 }
@@ -477,12 +477,21 @@ struct ClipsView: View {
     // MARK: - Footer Bar
 
     private var footerBar: some View {
-        HStack(spacing: 14) {
+        let shortcuts = ShortcutStore.shared
+        return HStack(spacing: Space.md) {
             shortcutHint(key: "1..9", desc: L10n.tr(.quickPaste))
-            shortcutHint(key: "↩", desc: L10n.tr(.paste))
-            shortcutHint(key: "Esc", desc: L10n.tr(.close))
-            shortcutHint(key: "⌘1", desc: L10n.tr(.favorites))
-            shortcutHint(key: "⌘<", desc: L10n.tr(.all))
+            if !shortcuts.paste.displayString.isEmpty {
+                shortcutHint(key: shortcuts.paste.displayString, desc: L10n.tr(.paste))
+            }
+            if !shortcuts.close.displayString.isEmpty {
+                shortcutHint(key: shortcuts.close.displayString, desc: L10n.tr(.close))
+            }
+            if !shortcuts.favorites.displayString.isEmpty {
+                shortcutHint(key: shortcuts.favorites.displayString, desc: L10n.tr(.favorites))
+            }
+            if !shortcuts.allClips.displayString.isEmpty {
+                shortcutHint(key: shortcuts.allClips.displayString, desc: L10n.tr(.all))
+            }
 
             Spacer()
 

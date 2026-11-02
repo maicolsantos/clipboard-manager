@@ -119,6 +119,22 @@ public enum L10n {
         case launchAtLogin
         case confirmDeleteTitle
         case confirmDeleteMessage
+        case shortcutsTab
+        case globalShortcut
+        case globalShortcutDescription
+        case windowShortcuts
+        case openClipsAction
+        case allClipsAction
+        case favoritesAction
+        case pasteAction
+        case closeAction
+        case recordShortcut
+        case recordingPrompt
+        case clearShortcut
+        case resetDefaults
+        case shortcutsHelp
+        case shortcutConflictWarning
+        case hotkeyConflictWarning
 
         var en: String {
             switch self {
@@ -169,6 +185,22 @@ public enum L10n {
             case .launchAtLogin: return "Launch at login"
             case .confirmDeleteTitle: return "Delete clip?"
             case .confirmDeleteMessage: return "Are you sure you want to delete this clip? This action cannot be undone."
+            case .shortcutsTab: return "Shortcuts"
+            case .globalShortcut: return "Global Shortcut"
+            case .globalShortcutDescription: return "Press this shortcut from any application to show or hide the clipboard history."
+            case .windowShortcuts: return "Window Navigation & Actions"
+            case .openClipsAction: return "Open Clips"
+            case .allClipsAction: return "All Clips"
+            case .favoritesAction: return "Favorites"
+            case .pasteAction: return "Paste Selected Clip"
+            case .closeAction: return "Close Window"
+            case .recordShortcut: return "Click to record"
+            case .recordingPrompt: return "Type shortcut…"
+            case .clearShortcut: return "Clear shortcut"
+            case .resetDefaults: return "Restore Defaults"
+            case .shortcutsHelp: return "Esc cancels recording. Delete clears the shortcut."
+            case .shortcutConflictWarning: return "This shortcut was moved from another action."
+            case .hotkeyConflictWarning: return "Another app already uses this global shortcut."
             }
         }
 
@@ -221,6 +253,22 @@ public enum L10n {
             case .launchAtLogin: return "Iniciar no login"
             case .confirmDeleteTitle: return "Apagar clipe?"
             case .confirmDeleteMessage: return "Tem certeza de que deseja apagar este clipe? Esta ação não pode ser desfeita."
+            case .shortcutsTab: return "Atalhos"
+            case .globalShortcut: return "Atalho Global"
+            case .globalShortcutDescription: return "Pressione este atalho em qualquer aplicativo para exibir ou ocultar o histórico."
+            case .windowShortcuts: return "Navegação e Ações na Janela"
+            case .openClipsAction: return "Abrir Clips"
+            case .allClipsAction: return "Todos os Clipes"
+            case .favoritesAction: return "Favoritos"
+            case .pasteAction: return "Colar Item Selecionado"
+            case .closeAction: return "Fechar Janela"
+            case .recordShortcut: return "Clique para gravar"
+            case .recordingPrompt: return "Pressione o atalho…"
+            case .clearShortcut: return "Limpar atalho"
+            case .resetDefaults: return "Restaurar Padrões"
+            case .shortcutsHelp: return "Esc cancela a gravação. Delete limpa o atalho."
+            case .shortcutConflictWarning: return "Este atalho foi transferido de outra ação."
+            case .hotkeyConflictWarning: return "Outro aplicativo já utiliza este atalho global."
             }
         }
 
@@ -273,6 +321,22 @@ public enum L10n {
             case .launchAtLogin: return "Iniciar ao iniciar a sessão"
             case .confirmDeleteTitle: return "Eliminar clipe?"
             case .confirmDeleteMessage: return "Tem a certeza de que deseja eliminar este clipe? Esta ação não pode ser anulada."
+            case .shortcutsTab: return "Atalhos"
+            case .globalShortcut: return "Atalho Global"
+            case .globalShortcutDescription: return "Prima este atalho em qualquer aplicação para mostrar ou ocultar o histórico."
+            case .windowShortcuts: return "Navegação e Ações na Janela"
+            case .openClipsAction: return "Abrir Clips"
+            case .allClipsAction: return "Todos os Clipes"
+            case .favoritesAction: return "Favoritos"
+            case .pasteAction: return "Colar Item Selecionado"
+            case .closeAction: return "Fechar Janela"
+            case .recordShortcut: return "Clique para gravar"
+            case .recordingPrompt: return "Prima o atalho…"
+            case .clearShortcut: return "Limpar atalho"
+            case .resetDefaults: return "Restaurar Predefinições"
+            case .shortcutsHelp: return "Esc cancela a gravação. Delete limpa o atalho."
+            case .shortcutConflictWarning: return "Este atalho foi transferido de outra ação."
+            case .hotkeyConflictWarning: return "Outra aplicação já utiliza este atalho global."
             }
         }
 
@@ -325,6 +389,22 @@ public enum L10n {
             case .launchAtLogin: return "Abrir al iniciar sesión"
             case .confirmDeleteTitle: return "¿Eliminar clip?"
             case .confirmDeleteMessage: return "¿Seguro que quieres eliminar este clip? Esta acción no se puede deshacer."
+            case .shortcutsTab: return "Atajos"
+            case .globalShortcut: return "Atajo Global"
+            case .globalShortcutDescription: return "Pulse este atajo en cualquier aplicación para mostrar u ocultar el historial."
+            case .windowShortcuts: return "Navegación y Acciones en la Ventana"
+            case .openClipsAction: return "Abrir Clips"
+            case .allClipsAction: return "Todos los Clips"
+            case .favoritesAction: return "Favoritos"
+            case .pasteAction: return "Pegar Elemento Seleccionado"
+            case .closeAction: return "Cerrar Ventana"
+            case .recordShortcut: return "Haga clic para grabar"
+            case .recordingPrompt: return "Pulse el atajo…"
+            case .clearShortcut: return "Borrar atajo"
+            case .resetDefaults: return "Restaurar Predeterminados"
+            case .shortcutsHelp: return "Esc cancela la grabación. Delete borra el atajo."
+            case .shortcutConflictWarning: return "Este atajo se transfirió de otra acción."
+            case .hotkeyConflictWarning: return "Otra aplicación ya utiliza este atajo global."
             }
         }
     }

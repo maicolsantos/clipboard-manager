@@ -33,6 +33,22 @@ struct L10nTests {
             #expect(!L10n.tr(.launchAtLogin, lang: lang).isEmpty)
             #expect(!L10n.tr(.confirmDeleteTitle, lang: lang).isEmpty)
             #expect(!L10n.tr(.confirmDeleteMessage, lang: lang).isEmpty)
+            #expect(!L10n.tr(.shortcutsTab, lang: lang).isEmpty)
+            #expect(!L10n.tr(.globalShortcut, lang: lang).isEmpty)
+            #expect(!L10n.tr(.globalShortcutDescription, lang: lang).isEmpty)
+            #expect(!L10n.tr(.windowShortcuts, lang: lang).isEmpty)
+            #expect(!L10n.tr(.openClipsAction, lang: lang).isEmpty)
+            #expect(!L10n.tr(.allClipsAction, lang: lang).isEmpty)
+            #expect(!L10n.tr(.favoritesAction, lang: lang).isEmpty)
+            #expect(!L10n.tr(.pasteAction, lang: lang).isEmpty)
+            #expect(!L10n.tr(.closeAction, lang: lang).isEmpty)
+            #expect(!L10n.tr(.recordShortcut, lang: lang).isEmpty)
+            #expect(!L10n.tr(.recordingPrompt, lang: lang).isEmpty)
+            #expect(!L10n.tr(.clearShortcut, lang: lang).isEmpty)
+            #expect(!L10n.tr(.resetDefaults, lang: lang).isEmpty)
+            #expect(!L10n.tr(.shortcutsHelp, lang: lang).isEmpty)
+            #expect(!L10n.tr(.shortcutConflictWarning, lang: lang).isEmpty)
+            #expect(!L10n.tr(.hotkeyConflictWarning, lang: lang).isEmpty)
         }
     }
 
@@ -54,6 +70,8 @@ struct L10nTests {
 
         #expect(L10n.tr(.appearanceTab, lang: .ptBR) == "Aparência")
         #expect(L10n.tr(.appearanceTab, lang: .ptPT) == "Aspeto")
+        #expect(L10n.tr(.shortcutsTab, lang: .ptBR) == "Atalhos")
+        #expect(L10n.tr(.shortcutsTab, lang: .ptPT) == "Atalhos")
     }
 
     @Test("Spanish translations")
@@ -65,5 +83,6 @@ struct L10nTests {
         #expect(L10n.tr(.quickPaste, lang: .es) == "Pegado rápido")
         #expect(L10n.tr(.close, lang: .es) == "Cerrar")
         #expect(L10n.tr(.quit, lang: .es) == "Salir de Clips")
+        #expect(L10n.tr(.shortcutsTab, lang: .es) == "Atajos")
     }
 }

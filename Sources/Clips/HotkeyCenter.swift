@@ -1,5 +1,6 @@
 import Carbon.HIToolbox
 import Foundation
+import ClipsKit
 
 @MainActor
 final class HotkeyCenter {
@@ -8,20 +9,39 @@ final class HotkeyCenter {
     private var hotKeyRef: EventHotKeyRef?
     private var eventHandlerRef: EventHandlerRef?
     var onTrigger: (@MainActor () -> Void)?
+    private(set) var lastRegistrationStatus: OSStatus = noErr
+    private var isPaused = false
 
     private init() {}
 
+    func pause() {
+        isPaused = true
+        unregister()
+    }
+
+    func resume() {
+        isPaused = false
+        register()
+    }
+
     func register() {
         unregister()
+        guard !isPaused else { return }
 
-        // Register Command + Shift + V
+        let combo = ShortcutStore.shared.openClips
+        guard !combo.isEmpty else {
+            lastRegistrationStatus = noErr
+            return
+        }
+
         let hotKeyID = EventHotKeyID(signature: OSType(0x434C_4950), id: 1) // 'CLIP'
-        let modifiers = UInt32(cmdKey | shiftKey)
-        let keyCode = UInt32(kVK_ANSI_V) // 9
+        let modifiers = combo.carbonModifiers
+        let keyCode = UInt32(combo.keyCode)
 
         let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef)
+        lastRegistrationStatus = status
         if status != noErr {
-            print("Failed to register hotkey Command-Shift-V: status \(status)")
+            print("Failed to register hotkey \(combo.displayString): status \(status)")
         }
 
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
